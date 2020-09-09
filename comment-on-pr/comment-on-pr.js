@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const {env} = process;
 const {readFileSync} = require('fs');
-const {execSync, stringify, curlOpts} = require('action-utils');
+const {execSync, stringify, curlOpts} = require('cylc-action-utils');
 
 const pr_event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH)).pull_request;
 const author = pr_event.assignees[0].login;

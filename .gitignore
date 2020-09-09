@@ -1,2 +1,4 @@
-# Do not ignore top-level node_modules folder - it used to add the utils script to node's require path
-!node_modules/
+node_modules/**
+
+!node_modules/cylc-action-utils.js
+# Have put that file in node_modules so that we don't have to specify the path to it every time we require() it
