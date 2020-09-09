@@ -1,0 +1,20 @@
+name: Build Python package
+description: Build Python package wheel distribution. Can also be run in test mode.
+inputs:
+  dry-run:
+    description: If true, merely test the build process in a temporary directory
+    required: false
+    default: false
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        IS_TEST: ${{ inputs.dry-run }}
+      run: |
+        if "$IS_TEST"; then
+          cd $( mktemp -d )
+          python3 "${{ github.workspace }}/setup.py" bdist_wheel
+        else
+          python3 setup.py bdist_wheel sdist
+        fi

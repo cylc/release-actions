@@ -1,0 +1,2 @@
+# Do not ignore top-level node_modules folder - it used to add the utils script to node's require path
+!node_modules/

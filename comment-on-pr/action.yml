@@ -1,0 +1,44 @@
+name: Comment on release PR with the outcome of publishing, next steps
+description: Deletes branch & closes milestone if possible (assuming the publish succeeded)
+# NOTE: Needs GITHUB_TOKEN env variable
+
+inputs:
+  release-url:
+    description: The URL of the GitHub release
+    required: true
+# env outputs:
+  # VERSION: (as above)
+runs:
+  using: composite
+  steps:
+    - name: Comment on PR
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        JOB_STATUS: ${{ job.status }}
+        RELEASE_URL: ${{ inputs.release-url }}
+      run: node comment-on-pr.js
+
+    - name: Delete the PR branch
+      shell: bash --noprofile --norc {0}
+      env:
+        JOB_STATUS: ${{ job.status }}
+      run: |
+        echo ""
+        if [[ "$JOB_STATUS" == "success" ]]; then
+          echo "Deleting PR branch..."
+
+          curl -X DELETE \
+            https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${{ github.event.pull_request.head.ref }} \
+            -H "authorization: Bearer $GITHUB_TOKEN" \
+            --silent --fail --show-error
+
+          if [[ $? -eq 0 ]]; then
+            echo "Deleted PR branch"
+          else
+            echo "::warning:: Could not delete PR branch"
+          fi
+
+        else
+          echo "::warning:: PR branch not deleted as job did not succeed"
+        fi

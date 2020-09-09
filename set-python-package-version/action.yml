@@ -1,0 +1,72 @@
+name: Set Python package version
+description: Set and validate package version in __init__.py, and check it doesn't already exist on PyPI.org
+inputs:
+  version:
+    description: PEP 440 compliant version number of the release. If this is not set, will use the env var VERSION instead.
+    required: false
+  init-file:
+    description: Path to __init__.py
+    required: true
+  pypi-package-name:
+    description: Name of package on PyPI.org
+    required: true
+  stage-changes:
+    description: Whether to stage the changes to __init__.py
+    required: false
+    default: true
+outputs:
+  setup-py-version:
+    description: Version number as outputted by setup.py (might be different from __init__.py, e.g. if epoch prefixed)
+    value: ${{ steps.get-setup-py-version.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - name: Install utils
+      shell: bash
+      run: |
+        python3 -m pip install -q packaging
+        echo "::add-path::${{ github.action_path }}/../bin"  # Note: this persists in the workflow after the action is called
+
+    - name: Update version in __init__.py
+      shell: bash
+      env:
+        INIT_FILE: ${{ inputs.init-file }}
+      run: |
+        if [[ "$INPUT_VERSION" ]]; then
+          VERSION=$INPUT_VERSION
+        fi
+        if [[ -z "$VERSION" ]]; then
+          echo "::error:: No version number supplied"
+          exit 1
+        fi
+
+        pattern="(__version__ ?= ?['\"]).*(['\"])"
+        sed -i -E "s/${pattern}/\1${VERSION}\2/" "$INIT_FILE"
+
+        if [[ -z $(git diff --stat -- "$INIT_FILE") ]]; then
+          echo "::error:: No changes to ${INIT_FILE} occurred"
+          exit 1
+        fi
+
+        if ${{ inputs.stage-changes }}; then
+          git add "$INIT_FILE"
+        fi
+
+    - name: Get setup.py version
+      # Might differ slightly from __init__.py, e.g. if epoch prefixed
+      id: get-setup-py-version
+      shell: bash
+      run: |
+        setup_py_version=$( python setup.py --version )
+        # Check version number is valid:
+        cmp_py_versions "$setup_py_version" "$setup_py_version"
+        echo "setup.py version: ${setup_py_version}"
+        echo "::set-output name=version::$setup_py_version"
+
+    - name: Check version doesn't already exist on PyPI.org
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        PYPI_PACKAGE_NAME: ${{ inputs.pypi-package-name }}
+        SETUP_PY_VERSION: ${{ steps.get-setup-py-version.outputs.version }}
+      run: node check-pypi.js

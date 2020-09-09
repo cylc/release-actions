@@ -1,0 +1,23 @@
+name: Get version number from release PR
+description: Sets the VERSION environment variable
+inputs:
+  pr-branch-prefix:
+    description: Set this to override the default branch name prefix "prepare-"
+    required: false
+    default: 'prepare-'
+# env outputs:
+  # VERSION: The version number of the release
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        PR_BRANCH_PREFIX: ${{ inputs.pr-branch-prefix }}
+      run: |
+        VERSION=$( grep -oP "(?<=${PR_BRANCH_PREFIX}).*" <<< '${{ github.head_ref }}' )
+        if [[ -z "$VERSION" ]]; then
+          echo "::error:: Could not get version name from PR branch name '${{ github.head_ref }}'"
+          echo "Note: PR branch name must begin with '${PR_BRANCH_PREFIX}'"
+          exit 1
+        fi
+        echo "::set-env name=VERSION::$VERSION"
