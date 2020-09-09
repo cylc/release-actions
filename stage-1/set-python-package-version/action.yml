@@ -25,7 +25,7 @@ runs:
       shell: bash
       run: |
         python3 -m pip install -q packaging
-        echo "::add-path::${{ github.action_path }}/../bin"  # Note: this persists in the workflow after the action is called
+        echo "::add-path::${{ github.action_path }}/../../bin"  # Note: this persists in the workflow after the action is called
 
     - name: Update version in __init__.py
       shell: bash
