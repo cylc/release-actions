@@ -1,0 +1,36 @@
+name: Update changelog release date
+description: Write today's date to the <span actions:bind='release-date'> span in the changelog
+inputs:
+  changelog-file:
+    description: Path to changelog file
+    required: true
+    default: CHANGES.md
+  stage-changes:
+    description: Whether to stage the changes in git
+    required: false
+    default: true
+# env outputs:
+  # CHANGELOG_DATE
+runs:
+  using: composite
+  steps:
+    - id: main
+      shell: bash
+      env:
+        CHANGELOG_FILE: ${{ inputs.changelog-file }}
+      run: |
+        pattern="(<span actions:bind='release-date'>).*(<\/span>)"
+        date_now=$( date '+%Y-%m-%d' --utc )
+        replacement="Released $date_now"
+        sed -i -E "0,/${pattern}/s//\1${replacement}\2/" "$CHANGELOG_FILE"  # Only replaces 1st match
+
+        if [[ -z $(git diff --stat -- "$CHANGELOG_FILE") ]]; then
+          echo "::error:: Couldn't update release date in ${CHANGELOG_FILE}"
+          exit 1
+        fi
+
+        if ${{ inputs.stage-changes }}; then
+          git add "$CHANGELOG_FILE"
+        fi
+
+        echo "::set-env name=CHANGELOG_DATE::$date_now"

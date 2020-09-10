@@ -1,0 +1,67 @@
+name: Create pull request
+description: Create the release PR
+# NOTE: Needs GITHUB_TOKEN env variable (and HEAD_REF)
+
+inputs:
+  pr-label:
+    description: The label to add to the PR
+    required: false
+    default: 'release'
+  message:
+    description: Commit message
+    required: false
+    default: 'Prepare release ${VERSION}'
+  commit-all:
+    description: If true, stage all files before comitting
+    required: false
+    default: false
+  # registry:
+  #   description: What package registry to print in the PR if publishing package, e.g. 'PyPI'
+  #   required: false
+runs:
+  using: composite
+  # main: index.js
+  # # Use outcome of push step from main workflow:
+  # post-if: always() && ! success() && steps.push.outcome == 'success'
+  # post: delete-branch.js  # On fail: delete PR branch on origin, if it was pushed
+  steps:
+    - name: Commit & push
+      shell: bash
+      run: |
+        if ${{ inputs.commit-all }}; then
+          git add --all
+        fi
+
+        git status
+
+        git commit -m "${{ inputs.message }}" -m "Workflow: ${{ github.workflow}}, run: ${{ github.run_number }}"
+        git push  # Note: In the "checkout-pr-branch" action we set the "push.default" git config item to "current"
+        echo ""
+
+    - name: Create pull request
+      id: create-pr
+      shell: bash --noprofile --norc {0}
+      # Note: not `-eo pipefail` as we need last step to run if this step fails
+      working-directory: ${{ github.action_path }}
+      env:
+        PR_LABEL: ${{ inputs.pr-label }}
+      run: |
+        node create-pr.js
+
+        if [[ $? -eq 0 ]]; then
+          echo "::set-output name=outcome::success"
+        fi
+        echo ""
+
+    - name: On fail - delete PR branch if it was pushed
+      shell: bash
+      run: |
+        if [[ -z "${{ steps.create-pr.outputs.outcome }}" ]]; then
+          backup_sha=$( git rev-parse "origin/${HEAD_REF}" )
+          git push -d origin "$HEAD_REF"
+          echo "::warning:: Deleted the newly-pushed branch '${HEAD_REF}' because the workflow failed"
+          echo "If you need to recover the branch:"
+          echo "  git fetch origin ${backup_sha}"
+          echo "  git checkout -b ${HEAD_REF} ${backup_sha}"
+          exit 1
+        fi

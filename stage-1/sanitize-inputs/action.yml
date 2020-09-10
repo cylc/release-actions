@@ -1,0 +1,20 @@
+name: Sanitise workflow inputs
+description: Sets the env vars VERSION and BASE_REF. Should be first step of workflow.
+# github.event inputs:
+  # version: The version number of the release
+  # branch: The name of the branch against which the release PR should be opened
+# env outputs:
+  # VERSION: (as above)
+  # BASE_REF: (the branch name as above)
+runs:
+  using: composite
+  steps:
+    - shell: node {0}
+      env:
+        VERSION: ${{ github.event.inputs.version }}
+        BRANCH: ${{ github.event.inputs.branch }}
+      run: |
+        const versionStr = process.env.VERSION.trim();
+        console.log(`::set-env name=VERSION::${versionStr}`);
+        const branchStr = process.env.BRANCH.trim();
+        console.log(`::set-env name=BASE_REF::${branchStr}`);
