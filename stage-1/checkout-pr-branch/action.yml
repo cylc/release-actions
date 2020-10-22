@@ -25,6 +25,7 @@ runs:
       shell: bash
       env:
         BRANCH_PREFIX: ${{ inputs.prefix }}
+        INPUT_VERSION: ${{ inputs.version }}
       run: |
         if [[ "$INPUT_VERSION" ]]; then
           VERSION=$INPUT_VERSION

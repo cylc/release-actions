@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  pull_request:
+
+jobs:
+
+  test-main:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Style test
+      run: npx eslint .
+
+    - name: Test "cmp_py_versions"
+      run: |
+        [[ $( ./bin/cmp_py_versions "8.0.0" "8" ) == "" ]]
+        [[ $( ./bin/cmp_py_versions "8.0a3" "8.0.1" ) == "8.0a3 not equal to 8.0.1" ]]
+
+        if [[ $( ./bin/cmp_py_versions "8.O.1" "8.O.1" 2> out.stderr ) ]]; then
+          echo "::warning:: Invalid version number did not throw error"
+          exit 1
+        fi
+        echo "::group::Grepping for expected error message..."
+        grep "InvalidVersion" out.stderr
+        echo "::endgroup::"
+
+
+  test-stage-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Test "sanitize-inputs"
+      uses: ./stage-1/sanitize-inputs
+      with:
+        version: ' 9.2.3 '
+        branch: " master "
+
+    - name: Check "sanitize-inputs" result
+      run: |
+        [[ "$VERSION" == '9.2.3' ]]
+        [[ "$BASE_REF" == 'master' ]]
+
+    - name: Test "checkout-pr-branch"
+      uses: ./stage-1/checkout-pr-branch
+
+    - name: Check "checkout-pr-branch" result
+      run: |
+        [[ "$HEAD_REF" == 'prepare-9.2.3' ]]
+        [[ $( git branch --show-current ) == 'prepare-9.2.3' ]]
