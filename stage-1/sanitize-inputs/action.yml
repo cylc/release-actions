@@ -9,12 +9,9 @@ description: Sets the env vars VERSION and BASE_REF. Should be first step of wor
 runs:
   using: composite
   steps:
-    - shell: node {0}
+    - shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         VERSION: ${{ github.event.inputs.version }}
         BRANCH: ${{ github.event.inputs.branch }}
-      run: |
-        const versionStr = process.env.VERSION.trim();
-        console.log(`::set-env name=VERSION::${versionStr}`);
-        const branchStr = process.env.BRANCH.trim();
-        console.log(`::set-env name=BASE_REF::${branchStr}`);
+      run: node sanitize-inputs.js

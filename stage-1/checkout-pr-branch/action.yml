@@ -37,4 +37,4 @@ runs:
         HEAD_REF="${BRANCH_PREFIX}${VERSION}"
         git checkout -b "$HEAD_REF"
 
-        echo "::set-env name=HEAD_REF::$HEAD_REF"
+        echo "HEAD_REF=$HEAD_REF" >> $GITHUB_ENV
