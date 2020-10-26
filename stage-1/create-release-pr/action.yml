@@ -32,9 +32,11 @@ runs:
           git add --all
         fi
 
-        git status
+        echo "[command]git status"; git status
 
+        echo "[command]git commit"
         git commit -m "${{ inputs.message }}" -m "Workflow: ${{ github.workflow}}, run: ${{ github.run_number }}"
+        echo "[command]git push"
         git push  # Note: In the "checkout-pr-branch" action we set the "push.default" git config item to "current"
         echo ""
 
@@ -46,6 +48,7 @@ runs:
       env:
         PR_LABEL: ${{ inputs.pr-label }}
       run: |
+        echo "[command]Create release PR"
         node create-pr.js
 
         if [[ $? -eq 0 ]]; then

@@ -15,7 +15,8 @@ jobs:
     - name: Style test
       run: npx eslint .
 
-    - run: echo ".github/test_bin" >> $GITHUB_PATH
+    - name: Other setup
+      run: echo ".github/test_bin" >> $GITHUB_PATH
 
     - name: Test "cmp_py_versions"
       run: |
@@ -41,21 +42,22 @@ jobs:
       with:
         python-version: '3.x'
 
-    - run: echo ".github/test_bin" >> $GITHUB_PATH
+    - name: Other setup
+      run: echo ".github/test_bin" >> $GITHUB_PATH
 
-    - name: Test "sanitize-inputs"
+    - name: Run "sanitize-inputs"
       uses: ./stage-1/sanitize-inputs
       with:
         version: ' 9.2.3 '
         branch: " master "
-    - name: Check "sanitize-inputs" result
+    - name: Test "sanitize-inputs" result
       run: |
         assert_equal "$VERSION" '9.2.3'
         assert_equal "$BASE_REF" 'master'
 
-    - name: Test "checkout-pr-branch"
+    - name: Run "checkout-pr-branch"
       uses: ./stage-1/checkout-pr-branch
-    - name: Check "checkout-pr-branch" result
+    - name: Test "checkout-pr-branch" result
       run: |
         assert_equal "$HEAD_REF" 'prepare-9.2.3'
         assert_equal "$( git branch --show-current )" 'prepare-9.2.3'
@@ -70,7 +72,7 @@ jobs:
         echo "[command]git commit"
         git commit -m "Setup test files"
 
-    - name: Test "set-python-package-version"
+    - name: Run "set-python-package-version"
       id: set-package-version
       uses: ./stage-1/set-python-package-version
       with:
@@ -78,7 +80,7 @@ jobs:
         # The choice of package to check is arbitrary for this test, as long as it doesn't have a version 9.2.3
         pypi-package-name: 'isodatetime'
         init-file: '__init__.py'
-    - name: Check "set-python-package-version" result
+    - name: Test "set-python-package-version" result
       run: |
         python -c "
         from __init__ import __version__
@@ -86,18 +88,18 @@ jobs:
         "
         setup_py_version='${{ steps.set-package-version.outputs.setup-py-version }}'
         assert_equal "$setup_py_version" '1!9.2.3'
-
+        # Check changes to init file are staged
         exact_grep "M  __init__.py" <(git status -s)
 
-    - name: Test "update-changelog-release-date"
+    - name: Run "update-changelog-release-date"
       uses: ./stage-1/update-changelog-release-date
       with:
         changelog-file: CHANGES.md
-    - name: Check "update-changelog-release-date" result
+    - name: Test "update-changelog-release-date" result
       run: |
         date_now=$( date '+%Y-%m-%d' --utc )
         exact_grep "## isodatetime 2.1.0 (<span actions:bind='release-date'>Released $date_now</span>)" CHANGES.md
         # Check only the topmost entry above had its date updated
         exact_grep "## isodatetime 2.0.2 (<span actions:bind='release-date'>Released 2020-07-01</span>)" CHANGES.md
-
+        # Check changes to changelog are staged
         exact_grep "M  CHANGES.md" <(git status -s)
