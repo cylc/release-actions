@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# USAGE: $ exact_grep STRING FILE
+if ! grep -qF "$1" "$2"; then
+    echo "::error:: Failed grep for exact match '$1' in file '$2'"
+    cat "$2"
+    exit 1
+fi
