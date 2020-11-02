@@ -33,4 +33,4 @@ runs:
           git add "$CHANGELOG_FILE"
         fi
 
-        echo "::set-env name=CHANGELOG_DATE::$date_now"
+        echo "CHANGELOG_DATE=$date_now" >> $GITHUB_ENV

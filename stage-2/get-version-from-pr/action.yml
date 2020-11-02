@@ -20,4 +20,4 @@ runs:
           echo "Note: PR branch name must begin with '${PR_BRANCH_PREFIX}'"
           exit 1
         fi
-        echo "::set-env name=VERSION::$VERSION"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV

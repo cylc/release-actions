@@ -25,12 +25,13 @@ runs:
       shell: bash
       run: |
         python3 -m pip install -q packaging
-        echo "::add-path::${{ github.action_path }}/../../bin"  # Note: this persists in the workflow after the action is called
+        echo "${{ github.action_path }}/../../bin" >> $GITHUB_PATH  # Note: this persists in the workflow after the action is called
 
     - name: Update version in __init__.py
       shell: bash
       env:
         INIT_FILE: ${{ inputs.init-file }}
+        INPUT_VERSION: ${{ inputs.version }}
       run: |
         if [[ "$INPUT_VERSION" ]]; then
           VERSION=$INPUT_VERSION
