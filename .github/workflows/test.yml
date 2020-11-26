@@ -1,5 +1,7 @@
 name: Test
 
+# Limited unit testing of the actions
+
 on:
   pull_request:
 
