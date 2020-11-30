@@ -10,7 +10,8 @@ inputs:
 runs:
   using: composite
   steps:
-    - shell: bash
+    - name: Get version number
+      shell: bash
       env:
         PR_BRANCH_PREFIX: ${{ inputs.pr-branch-prefix }}
       run: |
@@ -21,3 +22,22 @@ runs:
           exit 1
         fi
         echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Install utils
+      shell: bash
+      run: python3 -m pip install -q packaging
+
+    - name: Get is prerelease?
+      id: prerelease
+      shell: python
+      run: |
+        import os
+        from packaging import version
+
+        ver = version.Version(os.environ['VERSION'])
+        is_pre = str(ver.is_prerelease).lower()
+        print(f'::set-output name=is_pre::{is_pre}')
+
+    - name: Export is prerelease
+      shell: bash
+      run: echo "PRERELEASE=${{ steps.prerelease.outputs.is_pre }}" >> $GITHUB_ENV
