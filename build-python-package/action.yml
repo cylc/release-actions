@@ -8,5 +8,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - shell: bash
+    - name: Install dependencies
+      shell: bash
+      run: python3 -m pip install wheel
+
+    - name: Build
+      shell: bash
       run: python3 setup.py bdist_wheel sdist
