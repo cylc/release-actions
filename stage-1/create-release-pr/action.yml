@@ -1,5 +1,5 @@
-name: Create pull request
-description: Create the release PR
+name: Create release pull request
+description: Commit, push and open release PR
 # NOTE: Needs GITHUB_TOKEN env variable (and HEAD_REF)
 
 inputs:
@@ -49,7 +49,7 @@ runs:
         PR_LABEL: ${{ inputs.pr-label }}
       run: |
         echo "[command]Create release PR"
-        node create-pr.js
+        node ./create-release-pr.js
 
         if [[ $? -eq 0 ]]; then
           echo "::set-output name=outcome::success"
