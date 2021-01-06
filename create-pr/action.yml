@@ -1,0 +1,53 @@
+name: Create pull request
+description: Open a PR given an already-pushed branch
+# NOTE: Needs GITHUB_TOKEN env variable
+
+inputs:
+  head:
+    description: Name of the PR branch (cannot be a branch on a fork)
+    required: true
+  base:
+    description: Name of the base branch to open the PR against
+    required: false
+    default: 'master'
+  title:
+    description: The title of the PR
+    required: true
+  body:
+    description: The body text of the PR (supports markdown)
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Create PR
+      id: create-pr
+      shell: bash --noprofile --norc {0}
+      # Note: not `-eo pipefail` as we need last step to run if this step fails
+      working-directory: ${{ github.action_path }}
+      env:
+        INPUT_HEAD: ${{ inputs.head }}
+        INPUT_BASE: ${{ inputs.base }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_BODY: ${{ inputs.body }}
+      run: |
+        node ./create-pr.js
+
+        if [[ $? -eq 0 ]]; then
+          echo "::set-output name=outcome::success"
+        fi
+        echo ""
+
+    - name: On fail - delete PR branch if it was pushed
+      shell: bash
+      run: |
+        if [[ -z "${{ steps.create-pr.outputs.outcome }}" ]]; then
+          backup_sha=$( git rev-parse "origin/${{ inputs.head }}" )
+          echo "::warning::Deleting the newly-pushed branch '${{ inputs.head }}' because the workflow failed"
+          git push -d origin "${{ inputs.head }}"
+          echo "If you need to recover the branch:"
+          echo "  git fetch origin ${backup_sha}"
+          echo "  git checkout -b ${{ inputs.head }} ${backup_sha}"
+          exit 1
+        fi
