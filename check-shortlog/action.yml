@@ -44,10 +44,9 @@ runs:
     - name: See if they differ
       shell: bash
       run: |
-        echo '::group::See if they differ'
-        diff shortlog contributors \
-          || (echo '::endgroup::' \
-          && echo '::error::${{ inputs.contributing_file }} or .mailmap needs updating.' \
+        echo "[command]diff"
+        diff -u shortlog contributors \
+          || (echo '::error::${{ inputs.contributing_file }} or .mailmap needs updating.' \
           && echo '::warning::If you have not added yourself to this file please do so.' \
           && echo '::warning::If you need to register a second email address add an entry to the .mailmap file (https://git-scm.com/docs/gitmailmap).' \
           && echo '::warning::If you want to change the appearence of your name add/edit the entry in the .mailmap file.' \
