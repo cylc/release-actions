@@ -19,6 +19,7 @@ runs:
         sed \
             -n \
             -e 's/ - //' \
+            -e 's/ (.*)//' \
             -e 's/^(//' -e 's/)$//' \
             -e '/start-shortlog/,${p;/end-shortlog/q}' \
             "${{ inputs.contributing_file }}" \
