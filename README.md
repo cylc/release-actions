@@ -26,7 +26,11 @@ See the `action.yml` file for what is required for a particular action.
 
 ## Contributing
 
-The `v1` branch should be updated to point at the latest release that maintains backwards compatibility (when I say "release", I mean commit, really, as we're not using tags to mark releases). When a breaking change is introduced, we should create a `v2` branch and leave the `v1` branch where it is (might also be a good idea to add a `v2.0.0` tag just to mark the start point).
+Open pull requests against the branch for the version you are adding a feature/bugfix/etc to.
+
+At time of writing, there is only `v1` (the default branch). The `v1` branch should always point at the latest release that maintains backwards compatibility (when I say "release", I mean commit, really, as we're not using tags to mark releases).
+
+When a breaking change is introduced, we should create a `v2` branch and make it the default branch (might also be a good idea to add a `v2.0.0` tag just to mark the start point).
 
 Note: Certain modules (e.g. `cylc-action-utils.js`) may be kept in `node_modules/` so that they don't have to be referenced by path when using `require()`, and should be unignored in `.gitignore`. For some reason, `yarn install` causes these modules to be deleted, so stick to `npm install`.
 
