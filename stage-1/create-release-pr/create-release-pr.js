@@ -24,10 +24,13 @@ if (!env.VERSION) {
     throw "::error:: Environment variable `VERSION` not set";
 }
 
+const repoURL = `https://github.com/${env.GITHUB_REPOSITORY}`;
+const API_repoURL = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}`;
 const github_event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH));
 const author = github_event.sender.login;
 
 const milestone = getMilestone();
+const workflowBadges = getTestWorkflowBadges();
 
 const milestoneText = () => {
     let checkbox = "[ ]";
@@ -36,7 +39,7 @@ const milestoneText = () => {
         if (parseInt(milestone.open_issues) === 0) {
             checkbox = "[x]";
         }
-        note = `\`${milestone.open_issues}\` other open issues/PRs on [milestone ${milestone.title}](https://github.com/${env.GITHUB_REPOSITORY}/milestone/${milestone.number}) at time of PR creation`;
+        note = `\`${milestone.open_issues}\` other open issues/PRs on [milestone ${milestone.title}](${repoURL}/milestone/${milestone.number}) at time of PR creation`;
     }
     return `${checkbox} Milestone complete?\n  ${note}`;
 };
@@ -47,7 +50,8 @@ const bodyText = `
 This PR was created by the \`${env.GITHUB_WORKFLOW}\` workflow, triggered by @${author}
 
 #### Tests:
-✔️ Passed - see the [workflow run](https://github.com/${env.GITHUB_REPOSITORY}/actions?query=workflow%3A%22${encodeURIComponent(env.GITHUB_WORKFLOW)}%22) (number ${env.GITHUB_RUN_NUMBER}) for more info
+${workflowBadges ? `- ${workflowBadges.join(' ')}` : ''}
+- ✔️ Build check passed - see the [workflow run](${repoURL}/actions?query=workflow%3A%22${encodeURIComponent(env.GITHUB_WORKFLOW)}%22) (number ${env.GITHUB_RUN_NUMBER}) for more info
 
 #### Checklist:
 - ${milestoneText()}
@@ -75,7 +79,7 @@ const payload = {
 };
 
 const request = `curl -X POST \
-    https://api.github.com/repos/${env.GITHUB_REPOSITORY}/pulls \
+    ${API_repoURL}/pulls \
     -H "authorization: Bearer $GITHUB_TOKEN" \
     -H "content-type: application/json" \
     --data '${stringify(payload)}' \
@@ -88,7 +92,7 @@ setMilestone_Assignee_Label(pr.number);
 
 function getMilestone() {
     const request = `curl -X GET \
-        https://api.github.com/repos/${env.GITHUB_REPOSITORY}/milestones \
+        ${API_repoURL}/milestones \
         -H "authorization: Bearer $GITHUB_TOKEN" \
         ${curlOpts}`;
 
@@ -116,13 +120,25 @@ function setMilestone_Assignee_Label(prNumber) {
         milestone: milestone ? milestone.number : undefined,
         assignees: [author],
         labels: env.PR_LABEL ? [env.PR_LABEL] : undefined
-    }; // stringify() removes undefined properties
+    }; // Note: stringify() below removes undefined properties
 
     const request = `curl -X PATCH \
-        https://api.github.com/repos/${env.GITHUB_REPOSITORY}/issues/${prNumber} \
+        ${API_repoURL}/issues/${prNumber} \
         -H "authorization: Bearer $GITHUB_TOKEN" \
         -H "content-type: application/json" \
         --data '${stringify(payload)}' \
-        ${curlOpts}`
+        ${curlOpts}`;
     execSync(request);
+}
+
+function getTestWorkflowBadges() {
+    if (!env.TEST_WORKFLOWS) {
+        return
+    }
+    const workflow_files = env.TEST_WORKFLOWS.split(',');
+    return Array.from(workflow_files, (file) => {
+        file = file.trim();
+        const baseURL = `${repoURL}/actions/workflows/${file}`;
+        return `[![${file}](${baseURL}/badge.svg?branch=${env.BASE_REF})](${baseURL}?query=branch%3A${env.BASE_REF})`;
+    });
 }

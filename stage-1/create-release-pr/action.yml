@@ -1,6 +1,9 @@
 name: Create release pull request
 description: Commit, push and open release PR
-# NOTE: Needs GITHUB_TOKEN env variable (and HEAD_REF)
+# NOTE: Required env vars:
+# - GITHUB_TOKEN
+# - BASE_REF (set by stage-1/sanitize-inputs)
+# - HEAD_REF (set by stage-1/checkout-pr-branch)
 
 inputs:
   pr-label:
@@ -11,6 +14,9 @@ inputs:
     description: Commit message
     required: false
     default: 'Prepare release ${VERSION}'
+  test-workflows:
+    description: Comma delimited list of GH Actions workflow YAML files (including file extension) to display status badges
+    required: false
   commit-all:
     description: If true, stage all files before comitting
     required: false
@@ -20,10 +26,6 @@ inputs:
   #   required: false
 runs:
   using: composite
-  # main: index.js
-  # # Use outcome of push step from main workflow:
-  # post-if: always() && ! success() && steps.push.outcome == 'success'
-  # post: delete-branch.js  # On fail: delete PR branch on origin, if it was pushed
   steps:
     - name: Commit & push
       shell: bash
@@ -47,6 +49,7 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         PR_LABEL: ${{ inputs.pr-label }}
+        TEST_WORKFLOWS: ${{ inputs.test-workflows }}
       run: |
         echo "[command]Create release PR"
         node ./create-release-pr.js
