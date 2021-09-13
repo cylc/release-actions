@@ -8,10 +8,17 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install dependencies
-      shell: bash
-      run: python3 -m pip install wheel
-
     - name: Build
       shell: bash
-      run: python3 setup.py bdist_wheel sdist
+      run: |
+        if [[ -f setup.py ]]; then
+          # old style setup.py project
+          # (must manually install build dependencies)
+          python3 -m pip install wheel
+          python3 setup.py bdist_wheel sdist
+        else
+          # PEP517 project
+          # (must install a builder, this installs build deps for us)
+          python3 -m pip install build
+          python3 -m build
+        fi

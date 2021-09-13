@@ -88,8 +88,8 @@ jobs:
         from __init__ import __version__
         assert __version__ == '9.2.3', f'::error:: assert version {__version__} == 9.2.3'
         "
-        setup_py_version='${{ steps.set-package-version.outputs.setup-py-version }}'
-        assert_equal "$setup_py_version" '1!9.2.3'
+        package_version='${{ steps.set-package-version.outputs.package-version }}'
+        assert_equal "$package_version" '1!9.2.3'
         # Check changes to init file are staged
         exact_grep "M  __init__.py" <(git status -s)
 
