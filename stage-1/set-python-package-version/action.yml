@@ -58,11 +58,13 @@ runs:
       id: get-package-version
       shell: bash
       run: |
-        if [[ ! -f setup.py ]]; then
+        if [[ -f setup.py ]]; then
           # get version from the setup.py for pre PEP517 projects
+          echo "setup.py detected"
           package_version=$( python setup.py --version )
         else
           # shim to get the project version from a PEP517 project
+          echo "PEP 517 project detected"
           echo 'from setuptools import setup; setup()' > setup.py
           package_version=$( python setup.py --version )
           rm setup.py
