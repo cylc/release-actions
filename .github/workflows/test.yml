@@ -35,6 +35,9 @@ jobs:
   test-stage-1:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      matrix:
+        pep517: [true, false]
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
@@ -64,11 +67,15 @@ jobs:
         assert_equal "$HEAD_REF" 'prepare-9.2.3'
         assert_equal "$( git branch --show-current )" 'prepare-9.2.3'
 
-    - name: Setup mock __init__.py, setup.py & changelog files
+    - name: Setup mock project files
       run: |
         cp .github/test_files/__init__.py ./__init__.py
-        cp .github/test_files/setup.py ./setup.py
         cp .github/test_files/CHANGES.md ./CHANGES.md
+        if ${{ matrix.pep517 }}; then
+          cp .github/test_files/setup.cfg ./setup.cfg
+        else
+          cp .github/test_files/setup.py ./setup.py
+        fi
 
         echo "[command]git add ."; git add .
         echo "[command]git commit"
@@ -88,8 +95,15 @@ jobs:
         from __init__ import __version__
         assert __version__ == '9.2.3', f'::error:: assert version {__version__} == 9.2.3'
         "
-        setup_py_version='${{ steps.set-package-version.outputs.setup-py-version }}'
-        assert_equal "$setup_py_version" '1!9.2.3'
+        package_version='${{ steps.set-package-version.outputs.package-version }}'
+        # In setup.py projects, the __init__.py __version__ may be different to the setup.py version
+        # but in PEP 517 projects, the setup.cfg version will be the same as __init__.py __version__
+        if ${{ matrix.pep517 }}; then
+          expected_version="9.2.3"
+        else
+          expected_version="1!9.2.3"
+        fi
+        assert_equal "$package_version" "$expected_version"
         # Check changes to init file are staged
         exact_grep "M  __init__.py" <(git status -s)
 

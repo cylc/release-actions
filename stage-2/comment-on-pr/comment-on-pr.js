@@ -41,8 +41,12 @@ You can still publish the dist to PyPI manually:
 
 (Make sure you have commit \`${pr_event.merge_commit_sha}\` checked out)
 \`\`\`shell
-# Create the build
+# Create the build (old style for setup.py projects)
 python3 setup.py bdist_wheel sdist
+
+# Create the build (PEP517)
+python -m build
+
 # Upload your build to PyPI
 twine upload dist/*
 \`\`\`
