@@ -50,7 +50,7 @@ const bodyText = `
 This PR was created by the \`${env.GITHUB_WORKFLOW}\` workflow, triggered by @${author}
 
 #### Tests:
-${workflowBadges ? `- ${workflowBadges.join(' ')}` : ''}
+${workflowBadges ? `- Tests last run on \`${env.BASE_REF}\`: ${workflowBadges.join(' ')}` : ''}
 - ✔️ Build check passed - see the [workflow run](${repoURL}/actions?query=workflow%3A%22${encodeURIComponent(env.GITHUB_WORKFLOW)}%22) (number ${env.GITHUB_RUN_NUMBER}) for more info
 
 #### Checklist:
