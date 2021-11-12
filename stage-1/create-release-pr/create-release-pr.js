@@ -55,15 +55,9 @@ ${workflowBadges ? `- Tests last run on \`${env.BASE_REF}\`: ${workflowBadges.jo
 
 #### Checklist:
 - ${milestoneText()}
-
 - [ ] Changelog up-to-date?
-  Examine pull requests made since the last release
-  "Released on" date updated? ${env.CHANGELOG_DATE ? `✔️ \`${env.CHANGELOG_DATE}\`` : `⚠️ couldn't automatically set date`}
-
-- [ ] All contributors listed?
-
-- [ ] \`.mailmap\` file correct?
-  In particular, check for duplication
+  - Examine pull requests made since the last release
+  - "Released on" date updated? ${env.CHANGELOG_DATE ? `✔️ \`${env.CHANGELOG_DATE}\`` : `⚠️ couldn't automatically set date`}
 
 #### Next steps:
 - @${author} should request 1 or 2 reviews

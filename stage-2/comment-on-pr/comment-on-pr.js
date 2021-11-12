@@ -37,7 +37,9 @@ Next steps for @${author}:
 const manualInstructions = `
 [Check the run](${pr_event.html_url}/checks)
 
-You can still publish the dist to PyPI manually:
+Revert the release commit and rerun the release process to retry.
+
+Alternatively you can still publish the dist to PyPI manually:
 
 (Make sure you have commit \`${pr_event.merge_commit_sha}\` checked out)
 \`\`\`shell
