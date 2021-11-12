@@ -14,10 +14,11 @@ runs:
       shell: bash
       env:
         PR_BRANCH_PREFIX: ${{ inputs.pr-branch-prefix }}
+        HEAD_REF: ${{ github.head_ref }}
       run: |
-        VERSION=$( grep -oP "(?<=${PR_BRANCH_PREFIX}).*" <<< '${{ github.head_ref }}' )
+        VERSION=$( grep -oP "(?<=${PR_BRANCH_PREFIX}).*" <<< "$HEAD_REF" )
         if [[ -z "$VERSION" ]]; then
-          echo "::error:: Could not get version name from PR branch name '${{ github.head_ref }}'"
+          echo "::error:: Could not get version name from PR branch name '${HEAD_REF}'"
           echo "Note: PR branch name must begin with '${PR_BRANCH_PREFIX}'"
           exit 1
         fi
