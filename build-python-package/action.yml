@@ -24,3 +24,9 @@ runs:
           python3 -m pip install build
           python3 -m build
         fi
+
+    - name: Check build
+      shell: bash
+      run: |
+        python3 -m pip install twine
+        twine check dist/*

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env bash
 
 # THIS FILE IS PART OF THE CYLC WORKFLOW ENGINE.
 # Copyright (C) NIWA & British Crown (Met Office) & Contributors.
@@ -16,18 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Check if two PEP 440 compliant Python package version numbers are equal.
-
-Usage:
-    $ cmp_py_versions <version_number1> <version_number2>
-
-    You can also check if a single version number is valid by passing it twice.
-"""
-
-import sys
-import packaging.version
-
-ver1, ver2 = [packaging.version.Version(i) for i in sys.argv[1:3]]
-
-if ver1 != ver2:
-    print(f'{ver1} not equal to {ver2}')
+git config --global user.name "github-actions[bot]"
+git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+git config push.default current || true  # won't work if cwd is not git repo

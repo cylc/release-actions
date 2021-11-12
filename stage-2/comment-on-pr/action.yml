@@ -23,13 +23,14 @@ runs:
       shell: bash --noprofile --norc {0}
       env:
         JOB_STATUS: ${{ job.status }}
+        HEAD_REF: ${{ github.event.pull_request.head.ref }}
       run: |
         echo ""
         if [[ "$JOB_STATUS" == "success" ]]; then
           echo "Deleting PR branch..."
 
           curl -X DELETE \
-            https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${{ github.event.pull_request.head.ref }} \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${HEAD_REF}" \
             -H "authorization: Bearer $GITHUB_TOKEN" \
             --silent --fail --show-error
 
