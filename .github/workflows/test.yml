@@ -31,6 +31,14 @@ jobs:
         fi
         exact_grep "InvalidVersion" out.stderr
 
+    - name: Run "configure-git"
+      uses: ./configure-git
+    - name: Test "configure-git"
+      run: |
+        echo "Somehow, Palpatine returned" >> README.md
+        # If configure-git didn't work, commit will fail:
+        git commit -a -m "Test commit"
+
 
   test-stage-1:
     runs-on: ubuntu-latest
