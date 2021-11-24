@@ -5,5 +5,4 @@ runs:
   using: composite
   steps:
     - shell: bash
-      working-directory: ${{ github.action_path }}
-      run: ./configure-git.sh
+      run: ${{ github.action_path }}/configure-git.sh
