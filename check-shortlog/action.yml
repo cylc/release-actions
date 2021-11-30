@@ -33,14 +33,14 @@ runs:
     - name: List commit authors
       shell: bash
       run: |
-        echo '::group::List commit authors'
         git shortlog -s "${{ github.sha }}" \
             | awk '{$1=""; print substr($0,2) }' \
             | sort \
             | grep -v '\[bot\]' \
             > shortlog
-        cat shortlog
-        echo "::endgroup::"
+        echo '::group::List commit authors'
+        git shortlog -se
+        echo '::endgroup::'
 
     - name: See if they differ
       shell: bash
