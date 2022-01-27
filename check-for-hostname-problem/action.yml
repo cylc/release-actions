@@ -1,0 +1,25 @@
+name: Check for hostname problem
+description: |
+  https://github.com/actions/virtual-environments/issues/4901#issuecomment-1020376126
+
+runs:
+  using: composite
+  steps:
+    - name: Check for hostname problem
+      if: ${{ !contains(runner.os, 'macos') }}
+      shell: python
+      run: |
+        import socket
+        import sys
+
+        hostname = socket.gethostbyname_ex(socket.gethostname())[0]
+        fqdn = socket.gethostbyname_ex(socket.getfqdn())[0]
+
+        print(
+            "socket.gethostbyname_ex() results:\n"
+            f"  socket.gethostname(): {hostname}\n"
+            f"  socket.getfqdn():     {fqdn}"
+        )
+        if hostname != fqdn:
+            print("::error::GH Actions hostname problem!")
+            sys.exit(1)
