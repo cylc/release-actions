@@ -17,6 +17,13 @@ jobs:
     - name: Style test
       run: npx eslint .
 
+    - name: Check that cylc-action-utils.js was not wiped out
+      run: |
+        if [[ ! -f node_modules/cylc-action-utils.js ]]; then
+          echo "::error::node_modules/cylc-action-utils.js not found - do not let npm wipe it out"
+          exit 1
+        fi
+
     - name: Other setup
       run: echo ".github/test_bin" >> $GITHUB_PATH
 
