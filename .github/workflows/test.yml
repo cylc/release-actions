@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 5
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Style test
       run: npx eslint .
@@ -55,7 +55,7 @@ jobs:
         pep517: [true, false]
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Python
       uses: actions/setup-python@v2
