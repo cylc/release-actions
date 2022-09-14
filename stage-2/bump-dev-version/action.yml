@@ -1,0 +1,79 @@
+name: Bump dev version of Python package
+description: Bump Python package to a guessed development version
+# NOTE: Needs GITHUB_TOKEN env variable
+
+inputs:
+  init-file:
+    description: Path to __init__.py
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install utils
+      shell: bash
+      run: python3 -m pip install -q packaging
+
+    - name: Configure git
+      shell: bash
+      run: ${{ github.action_path }}/../../configure-git/configure-git.sh
+
+    - name: Guess new dev version
+      id: guess
+      shell: python
+      env:
+        INIT_FILE: ${{ inputs.init-file }}
+      run: |
+        import os
+        import importlib.util
+        from packaging.version import Version
+
+        # Dynamically import __init__.py
+        spec = importlib.util.spec_from_file_location('tmp_module', os.environ['INIT_FILE'])
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Get version
+        ver = Version(module.__version__)
+        new_ver = f'{ver.major}.{ver.minor}.{ver.micro + 1}.dev'
+        print(f'::set-output name=new_version::{new_ver}')
+
+    - name: Update version in __init__.py
+      id: bump
+      shell: bash
+      env:
+        INIT_FILE: ${{ inputs.init-file }}
+        VERSION: ${{ steps.guess.outputs.new_version }}
+      run: |
+        pattern="(__version__ ?= ?['\"]).*(['\"])"
+        sed -i -E "s/${pattern}/\1${VERSION}\2/" "$INIT_FILE"
+
+        if [[ -z $(git diff --stat -- "$INIT_FILE") ]]; then
+          echo "::error::No changes to ${INIT_FILE} occurred"
+          exit 1
+        fi
+
+        BRANCH_NAME="bump-${VERSION}"
+        git checkout -b "$BRANCH_NAME"
+        git add "$INIT_FILE"
+
+        echo "[command]git status"; git status
+
+        echo "[command]git commit"
+        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow}}, run: ${{ github.run_number }}"
+        echo "[command]git push"
+        git push
+
+        echo "::set-output name=head_ref::${BRANCH_NAME}"
+
+    - name: Create PR
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
+        INPUT_BASE: ${{ github.event.pull_request.base.ref }}
+        INPUT_TITLE: 'Auto PR: bump dev version'
+        INPUT_BODY: |
+          I have attempted to guess the next dev version.
+          If it is not correct, please push to this branch.
+      run: node ../../create-pr/create-pr.js
