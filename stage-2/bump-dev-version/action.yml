@@ -60,13 +60,14 @@ runs:
         echo "[command]git status"; git status
 
         echo "[command]git commit"
-        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow}}, run: ${{ github.run_number }}"
+        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow }}, run: ${{ github.run_number }}"
         echo "[command]git push"
         git push
 
         echo "::set-output name=head_ref::${BRANCH_NAME}"
 
     - name: Create PR
+      id: create-pr
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
@@ -77,3 +78,11 @@ runs:
           I have attempted to guess the next dev version.
           If it is not correct, please push to this branch.
       run: node ../../create-pr/create-pr.js
+
+    - name: Assign user to PR
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        PR_NUM: ${{ steps.create-pr.outputs.pr-number }}
+      run: |
+        node ./assign-user-to-pr.js
