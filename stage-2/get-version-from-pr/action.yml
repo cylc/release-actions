@@ -28,8 +28,7 @@ runs:
       shell: bash
       run: python3 -m pip install -q packaging
 
-    - name: Get is prerelease?
-      id: prerelease
+    - name: Is it a prerelease?
       shell: python
       run: |
         import os
@@ -37,8 +36,7 @@ runs:
 
         ver = version.Version(os.environ['VERSION'])
         is_pre = str(ver.is_prerelease).lower()
-        print(f'::set-output name=is_pre::{is_pre}')
 
-    - name: Export is prerelease
-      shell: bash
-      run: echo "PRERELEASE=${{ steps.prerelease.outputs.is_pre }}" >> $GITHUB_ENV
+        # Set env var
+        with open(os.environ['GITHUB_ENV'], 'a') as f:
+            f.write(f'PRERELEASE={is_pre}')

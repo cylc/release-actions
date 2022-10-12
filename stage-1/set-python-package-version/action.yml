@@ -72,7 +72,7 @@ runs:
         # Check version number is valid:
         cmp_py_versions "$package_version" "$package_version"
         echo "package version: ${package_version}"
-        echo "::set-output name=version::$package_version"
+        echo "version=$package_version" >> $GITHUB_OUTPUT
 
     - name: Check version doesn't already exist on PyPI.org
       shell: bash
