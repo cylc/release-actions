@@ -55,7 +55,7 @@ runs:
         node ./create-release-pr.js
 
         if [[ $? -eq 0 ]]; then
-          echo "::set-output name=outcome::success"
+          echo "outcome=success" >> $GITHUB_OUTPUT
         fi
         echo ""
 

@@ -36,7 +36,9 @@ runs:
         # Get version
         ver = Version(module.__version__)
         new_ver = f'{ver.major}.{ver.minor}.{ver.micro + 1}.dev'
-        print(f'::set-output name=new_version::{new_ver}')
+        # Set output
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f'new_version={new_ver}')
 
     - name: Update version in __init__.py
       id: bump
@@ -64,25 +66,22 @@ runs:
         echo "[command]git push"
         git push
 
-        echo "::set-output name=head_ref::${BRANCH_NAME}"
+        echo "head_ref=${BRANCH_NAME}" >> $GITHUB_OUTPUT
 
     - name: Create PR
-      id: create-pr
       shell: bash
-      working-directory: ${{ github.action_path }}
       env:
         INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
         INPUT_BASE: ${{ github.event.pull_request.base.ref }}
-        INPUT_TITLE: 'Auto PR: bump dev version'
+        INPUT_TITLE: '🤖 Bump dev version'
         INPUT_BODY: |
           I have attempted to guess the next dev version.
           If it is not correct, please push to this branch.
-      run: node ../../create-pr/create-pr.js
-
-    - name: Assign user to PR
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      env:
-        PR_NUM: ${{ steps.create-pr.outputs.pr-number }}
+        REVIEWER: ${{ github.event.pull_request.sender.login }}
       run: |
-        node ./assign-user-to-pr.js
+        gh pr create -R "$GITHUB_REPOSITORY" \
+          -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \
+          -r "$REVIEWER"
+
+        # Add 'small' label if it exists, else no worries
+        gh pr edit "$INPUT_HEAD" -R "$GITHUB_REPOSITORY" --add-label 'small' || true
