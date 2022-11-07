@@ -46,13 +46,12 @@ runs:
       id: create-pr
       shell: bash --noprofile --norc {0}
       # Note: not `-eo pipefail` as we need last step to run if this step fails
-      working-directory: ${{ github.action_path }}
       env:
         PR_LABEL: ${{ inputs.pr-label }}
         TEST_WORKFLOWS: ${{ inputs.test-workflows }}
       run: |
         echo "[command]Create release PR"
-        node ./create-release-pr.js
+        node "${GITHUB_ACTION_PATH}/create-release-pr.js"
 
         if [[ $? -eq 0 ]]; then
           echo "outcome=success" >> $GITHUB_OUTPUT
