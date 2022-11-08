@@ -15,19 +15,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const {env} = process;
-const {writeFileSync} = require('fs');
-const {execSync} = require('cylc-action-utils');
+const {escSQ, execSync, setOutput} = require('cylc-action-utils');
 
 const cmd = [
     'gh', 'release', 'create',
     env.TAG,
     `--repo '${env.REPO}'`,
     `--target '${env.TARGET}'`,
-    `--title '${env.TITLE}'`,
+    `--title '${escSQ(env.TITLE)}'`,
 ]
 
 if (env.BODY) {
-    cmd.push(`--notes '${env.BODY.replace(/'/g, "&apos;")}'`)
+    cmd.push(`--notes '${escSQ(env.BODY)}'`)
 } else if (env.BODY_PATH) {
     cmd.push(`--notes-file '${env.BODY_PATH}'`)
 }
@@ -40,5 +39,4 @@ if (env.IS_PRERELEASE === 'true') {
 
 const url = execSync(cmd.join(' ')).split('\n')[0]
 
-// Set output
-writeFileSync(env.GITHUB_OUTPUT, `html_url=${url}`, {flag: 'a'})
+setOutput('html_url', url)

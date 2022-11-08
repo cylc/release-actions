@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const {env} = process;
 const {readFileSync} = require('fs');
-const {execSync, curlOpts} = require('cylc-action-utils');
+const {escSQ, execSync, curlOpts} = require('cylc-action-utils');
 // Note: all string properties of the `github` context are available as env vars as `GITHUB_<PROPERTY>`
 // WARNING: Don't use ${env.GITHUB_TOKEN} in execSync() as that might print in log. Use `$GITHUB_TOKEN` instead.
 
@@ -71,7 +71,7 @@ const cmd = [
     `-H '${env.HEAD_REF}'`,
     `-B '${env.BASE_REF}'`,
     `-t 'Prepare release: ${env.VERSION}'`,
-    `-b '${bodyText.replace(/'/g, "&apos;")}'`,
+    `-b '${escSQ(bodyText)}'`,
     `-a '${author}'`,
 ];
 if (milestone) {
