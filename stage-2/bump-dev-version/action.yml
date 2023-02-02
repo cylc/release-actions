@@ -12,7 +12,11 @@ runs:
   steps:
     - name: Install utils
       shell: bash
-      run: python3 -m pip install -q packaging
+      run: python3 -m pip install packaging
+
+    - name: Install module
+      shell: bash
+      run: python3 -m pip install . -e
 
     - name: Configure git
       shell: bash
@@ -77,7 +81,7 @@ runs:
         INPUT_BODY: |
           I have attempted to guess the next dev version.
           If it is not correct, please push to this branch.
-        REVIEWER: ${{ github.event.pull_request.sender.login }}
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
       run: |
         gh pr create -R "$GITHUB_REPOSITORY" \
           -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \

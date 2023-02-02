@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const {env} = process;
 const {readFileSync} = require('fs');
-const {execSync, stringify, curlOpts} = require('cylc-action-utils');
+const {escSQ, execSync, curlOpts} = require('cylc-action-utils');
 // Note: all string properties of the `github` context are available as env vars as `GITHUB_<PROPERTY>`
 // WARNING: Don't use ${env.GITHUB_TOKEN} in execSync() as that might print in log. Use `$GITHUB_TOKEN` instead.
 
@@ -65,23 +65,23 @@ ${workflowBadges ? `- Tests last run on \`${env.BASE_REF}\`: ${workflowBadges.jo
 - After merging, the bot will comment below with a link to the release (if not, look at the PR checks tab)
 `;
 
-const payload = {
-    title: `Prepare release: ${env.VERSION}`,
-    head: env.HEAD_REF,
-    base: env.BASE_REF,
-    body: bodyText
-};
+const cmd = [
+    'gh', 'pr', 'create',
+    `-R '${env.GITHUB_REPOSITORY}'`,
+    `-H '${env.HEAD_REF}'`,
+    `-B '${env.BASE_REF}'`,
+    `-t 'Prepare release: ${env.VERSION}'`,
+    `-b '${escSQ(bodyText)}'`,
+    `-a '${author}'`,
+];
+if (milestone) {
+    cmd.push(`-m '${milestone.title}'`)
+}
+if (env.PR_LABEL) {
+    cmd.push(`-l '${env.PR_LABEL}'`)
+}
 
-const request = `curl -X POST \
-    ${API_repoURL}/pulls \
-    -H "authorization: Bearer $GITHUB_TOKEN" \
-    -H "content-type: application/json" \
-    --data '${stringify(payload)}' \
-    ${curlOpts}`;
-
-const pr = JSON.parse(execSync(request));
-setMilestone_Assignee_Label(pr.number);
-
+execSync(cmd.join(' '));
 
 
 function getMilestone() {
@@ -106,23 +106,6 @@ function getMilestone() {
     }
     console.log(`::warning:: Could not find milestone matching "${env.VERSION}"`);
     return;
-}
-
-function setMilestone_Assignee_Label(prNumber) {
-    // Cannot set them when creating the PR unfortunately
-    const payload = {
-        milestone: milestone ? milestone.number : undefined,
-        assignees: [author],
-        labels: env.PR_LABEL ? [env.PR_LABEL] : undefined
-    }; // Note: stringify() below removes undefined properties
-
-    const request = `curl -X PATCH \
-        ${API_repoURL}/issues/${prNumber} \
-        -H "authorization: Bearer $GITHUB_TOKEN" \
-        -H "content-type: application/json" \
-        --data '${stringify(payload)}' \
-        ${curlOpts}`;
-    execSync(request);
 }
 
 function getTestWorkflowBadges() {

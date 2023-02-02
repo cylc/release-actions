@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 const {env} = process;
 const {readFileSync} = require('fs');
-const {execSync, stringify, curlOpts} = require('cylc-action-utils');
+const {execSync, escSQ, curlOpts} = require('cylc-action-utils');
 
 const pr_event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH)).pull_request;
 const author = pr_event.assignees[0].login;
@@ -80,7 +80,7 @@ execSync(`curl -X POST \
     ${pr_event.comments_url} \
     -H "authorization: Bearer $GITHUB_TOKEN" \
     -H "content-type: application/json" \
-    --data '${stringify(payload)}' \
+    --data '${escSQ(JSON.stringify(payload))}' \
     ${curlOpts}`
 );
 
@@ -96,7 +96,7 @@ function closeMilestone() {
                 https://api.github.com/repos/${env.GITHUB_REPOSITORY}/milestones/${pr_event.milestone.number} \
                 -H "authorization: Bearer $GITHUB_TOKEN" \
                 -H "content-type: application/json" \
-                --data '${stringify(payload)}' \
+                --data '${escSQ(JSON.stringify(payload))}' \
                 ${curlOpts}`
             );
             return true;
@@ -116,7 +116,7 @@ function updatePRTitle() {
         ${pr_event.url} \
         -H "authorization: Bearer $GITHUB_TOKEN" \
         -H "content-type: application/json" \
-        --data '${stringify(payload)}' \
+        --data '${escSQ(JSON.stringify(payload))}' \
         ${curlOpts}`
     );
 }
