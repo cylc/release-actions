@@ -16,7 +16,7 @@ runs:
 
     - name: Install module
       shell: bash
-      run: python3 -m pip install . -e
+      run: python3 -m pip install -e .
 
     - name: Configure git
       shell: bash
