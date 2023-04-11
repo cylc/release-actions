@@ -105,3 +105,27 @@ jobs:
         exact_grep "## isodatetime 2.0.2 (<span actions:bind='release-date'>Released 2020-07-01</span>)" CHANGES.md
         # Check changes to changelog are staged
         exact_grep "M  CHANGES.md" <(git status -s)
+
+  test-set-meta-releases:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: run
+        id: test-set-meta-releases
+        uses: ./set-meta-releases
+
+      - name: check
+        shell: python
+        run: |
+          import json
+          meta_releases = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases }}')
+          assert isinstance(meta_releases, list)
+          assert len(meta_releases) > 0
