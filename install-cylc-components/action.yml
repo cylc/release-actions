@@ -1,0 +1,127 @@
+name: Install Cylc Components
+description: |
+  Install Cylc (&Rose) project components at compatible versions.
+
+inputs:
+  meta_release:
+    description: |
+      The Cylc meta-release version e.g. 8.0.0 or 8.0.x or 8.1.0.
+
+      The default (`AUTO`) determines the meta-release for you based on the
+      repository this action is used in and the branch the pull request is
+      being merged into else the branch the workflow is being run against.
+    required: false
+    default: AUTO
+
+  cylc_flow:
+    description: Install cylc-flow (default=true)
+    default: true
+  cylc_uiserver:
+    description: Install cylc-uiserver (default=false)
+    default: false
+  cylc_rose:
+    description: Install cylc-rose (default=false)
+    default: false
+  metomi_rose:
+    description: Install metomi-rose (default=false)
+    default: false
+
+  cylc_flow_tag:
+    description: Manually specify cylc-flow tag/branch e.g. 8.0.0
+    required: false
+  cylc_uiserver_tag:
+    description: Manually specify cylc-uiserver tag/branch e.g. 1.0.0
+    required: false
+  cylc_rose_tag:
+    description: Manually specify cylc-rose tag/branch e.g. 1.0.0
+    required: false
+  metomi_rose_tag:
+    description: Manually specify metomi-rose tag/branch e.g. 2.0.0
+    required: false
+
+  cylc_flow_repo:
+    description: Override cylc-flow repo e.g. me/cylc-flow
+    default: cylc/cylc-flow
+    required: false
+  cylc_uiserver_repo:
+    description: Override cylc-uiserver repo e.g. me/cylc-uiserver
+    default: cylc/cylc-uiserver
+    required: false
+  cylc_rose_repo:
+    description: Override cylc-rose repo e.g. me/cylc-rose
+    default: cylc/cylc-rose
+    required: false
+  metomi_rose_repo:
+    description: Override metomi-rose repo e.g. me/rose
+    default: metomi/rose
+    required: false
+
+  cylc_flow_opts:
+    description: cylc-flow optional dependencies e.g. foo,bar,baz
+    default: all
+    required: false
+  cylc_uiserver_opts:
+    description: cylc-uiserver optional dependencies e.g. foo,bar,baz
+    default: all
+    required: false
+  cylc_rose_opts:
+    description: cylc-rose optional dependencies e.g. foo,bar,baz
+    default: all
+    required: false
+  metomi_rose_opts:
+    description: metomi-rose optional dependencies e.g. foo,bar,baz
+    default: all
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch meta-release info
+      shell: bash
+      run: |
+        wget \
+          https://raw.githubusercontent.com/cylc/cylc-admin/master/docs/status/branches.json
+        cat branches.json
+
+    - name: Determine compatible Cylc component versions
+      id: get_tag
+      shell: bash
+      env:
+        META_RELEASE: ${{ inputs.meta_release }}
+        BASE_BRANCH: ${{ github.base_ref || github.ref }}
+        REPOSITORY: ${{ github.repository }}
+      run: "${{ github.action_path }}/../bin/pick_compatible_branches"
+
+    - name: Install
+      shell: bash
+      env:
+        cylc_flow: ${{ inputs.cylc_flow_tag     || steps.get_tag.outputs.cylc_flow }}
+        cylc_uis:  ${{ inputs.cylc_uiserver_tag || steps.get_tag.outputs.cylc_uiserver }}
+        meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.metomi_rose }}
+        cylc_rose: ${{ inputs.cylc_rose_tag     || steps.get_tag.outputs.cylc_rose }}
+      run: |
+        REQS=requirement.txt
+        touch "$REQS"
+        if [[ ${{ inputs.cylc_flow }} == true ]]; then
+          echo \
+            "cylc-flow[${{ inputs.cylc_flow_opts }}] @ git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}" \
+            >> "$REQS"
+        fi
+        if [[ ${{ inputs.cylc_uiserver }} == true ]]; then
+          echo \
+            "cylc-uiserver[${{ inputs.cylc_uiserver_opts }}] @ git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}" \
+            >> "$REQS"
+        fi
+        if [[ ${{ inputs.metomi_rose }} == true ]]; then
+          echo \
+            "metomi-rose[${{ inputs.metomi_rose_opts }}] @ git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}" \
+            >> "$REQS"
+        fi
+        if [[ ${{ inputs.cylc_rose }} == true ]]; then
+          echo \
+            "cylc-rose[${{ inputs.cylc_rose_opts }}] @ git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}" \
+            >> "$REQS"
+        fi
+
+        cat "$REQS"
+        pip install -r "$REQS"

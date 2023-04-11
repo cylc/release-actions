@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+import json
+import os
+
+def main(meta_release, base_branch, repository, output_file):
+    """Determine compatible branches of Cylc components for this action.
+
+    This sets a GitHub action output for each Cylc component.
+
+    Args:
+        meta_release:
+            The Cylc meta-release e.g. 8.0, 8.1, 8.2, etc.
+
+            If this is AUTO we will use the first meta release which matches
+            the repository & base_branch.
+        base_branch:
+            The branch this PR was raised against / this action was called on.
+        repository:
+            The GitHub user/repository this action was called on.
+
+    """
+    action_user, action_repo = repository.split('/')
+    base_branch = base_branch.replace('refs/heads/', '')
+
+    # load the meta-release metadata - how meta
+    with open("branches.json", "r") as info:
+        data = json.load(info)
+    
+    # determine the meta_release if not provided
+    if meta_release == "AUTO":
+        for meta_release, branches in data["meta_releases"].items():
+            for meta_repository, meta_branch in branches.items():
+                # look for a meta-release which matches the repo & branch
+                meta_user, meta_repo = meta_repository.split("/")
+                if meta_repo == action_repo and meta_branch == base_branch:
+                    break
+            else:
+                # no match, check the next meta-release
+                continue
+            # match, this meta-release matches
+            break
+        else:
+            raise Exception(
+                f"No associated meta-release found for: { repository }@{ base_branch }"
+            )
+    
+    # extract the compatible Cylc component versions
+    with open(output_file, "w+") as github_output:
+        for repo, branch in data["meta_releases"][meta_release].items():
+            repo = repo.split("/")[1].replace("-", "_")
+            print(f"{repo}={branch}")
+            print(f"{repo}={branch}", file=github_output)
+
+
+if __name__ == '__main__':
+    main(
+        os.environ['META_RELEASE'],
+        os.environ['BASE_BRANCH'],
+        os.environ['REPOSITORY'],
+        os.environ["GITHUB_OUTPUT"]
+    )
