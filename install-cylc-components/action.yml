@@ -97,7 +97,7 @@ runs:
       env:
         cylc_flow: ${{ inputs.cylc_flow_tag     || steps.get_tag.outputs.cylc_flow }}
         cylc_uis:  ${{ inputs.cylc_uiserver_tag || steps.get_tag.outputs.cylc_uiserver }}
-        meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.metomi_rose }}
+        meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.rose }}
         cylc_rose: ${{ inputs.cylc_rose_tag     || steps.get_tag.outputs.cylc_rose }}
       run: |
         REQS=requirement.txt
