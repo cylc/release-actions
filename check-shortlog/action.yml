@@ -15,7 +15,6 @@ runs:
     - name: Get known contributors from contributing file
       shell: bash
       run: |
-        echo '::group::Get known contributors from contributing file'
         sed \
             -n \
             -e 's/ - //' \
@@ -27,19 +26,20 @@ runs:
             | tail -n +2 \
             | sort \
             > contributors
+        echo '::group::Contributors from contributing file:'
         cat contributors
         echo "::endgroup::"
 
     - name: List commit authors
       shell: bash
       run: |
-        git shortlog -s "${{ github.sha }}" \
+        git shortlog -s HEAD \
             | awk '{$1=""; print substr($0,2) }' \
             | sort \
             | grep -v '\[bot\]' \
             > shortlog
-        echo '::group::List commit authors'
-        git shortlog -se
+        echo '::group::Commit authors:'
+        git shortlog -se HEAD
         echo '::endgroup::'
 
     - name: See if they differ
