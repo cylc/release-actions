@@ -33,4 +33,4 @@ runs:
 
     - name: Check dependencies
       shell: bash
-      run: python3 -m pip install -e . --dry-run --ignore-installed
+      run: python3 -m pip install -e .[all] --dry-run --ignore-installed
