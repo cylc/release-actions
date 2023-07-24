@@ -30,3 +30,7 @@ runs:
       run: |
         python3 -m pip install twine
         twine check dist/*
+
+    - name: Check dependencies
+      shell: bash
+      run: python3 -m pip install -e . --dry-run --ignore-installed
