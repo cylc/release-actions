@@ -1,6 +1,10 @@
 name: Build Python package
 description: Build Python package wheel distribution. Must be run in the (usually top-level) package dir containing setup.py
 inputs:
+  check-dependencies:
+    description: Try pip-installing dependencies to make sure we are pinned to released versions on PyPI
+    required: false
+    default: true
   dry-run:
     description: Obsolete; there is no longer a difference between dry-run and real build
     required: false
@@ -32,5 +36,6 @@ runs:
         twine check dist/*
 
     - name: Check dependencies
+      if: inputs.check-dependencies
       shell: bash
       run: python3 -m pip install -e .[all] --dry-run --ignore-installed
