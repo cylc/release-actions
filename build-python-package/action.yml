@@ -36,6 +36,7 @@ runs:
         twine check dist/*
 
     - name: Check dependencies
-      if: inputs.check-dependencies
+      if: inputs.check-dependencies == 'true'
+      # ^ string comparison needed due to https://github.com/actions/runner/issues/2238
       shell: bash
       run: python3 -m pip install -e .[all] --dry-run --ignore-installed
