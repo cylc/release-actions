@@ -25,6 +25,9 @@ inputs:
   metomi_rose:
     description: Install metomi-rose (default=false)
     default: false
+  cylc_doc:
+    description: Install cylc-doc (default=false)
+    default: false
 
   cylc_flow_tag:
     description: Manually specify cylc-flow tag/branch e.g. 8.0.0
@@ -37,6 +40,9 @@ inputs:
     required: false
   metomi_rose_tag:
     description: Manually specify metomi-rose tag/branch e.g. 2.0.0
+    required: false
+  cylc_doc_tag:
+    description: Manually specify cylc-doc tag/branch e.g. 2.0.0
     required: false
 
   cylc_flow_repo:
@@ -55,6 +61,10 @@ inputs:
     description: Override metomi-rose repo e.g. me/rose
     default: metomi/rose
     required: false
+  cylc_doc_repo:
+    description: Override cylc-doc repo e.g. me/cylc-rose
+    default: cylc/cylc-doc
+    required: false
 
   cylc_flow_opts:
     description: cylc-flow optional dependencies e.g. foo,bar,baz
@@ -70,6 +80,10 @@ inputs:
     required: false
   metomi_rose_opts:
     description: metomi-rose optional dependencies e.g. foo,bar,baz
+    default: all
+    required: false
+  cylc_doc_opts:
+    description: cylc-doc optional dependencies e.g. foo,bar,baz
     default: all
     required: false
 
@@ -99,6 +113,7 @@ runs:
         cylc_uis:  ${{ inputs.cylc_uiserver_tag || steps.get_tag.outputs.cylc_uiserver }}
         meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.rose }}
         cylc_rose: ${{ inputs.cylc_rose_tag     || steps.get_tag.outputs.cylc_rose }}
+        cylc_rose: ${{ inputs.cylc_doc_tag     || steps.get_tag.outputs.cylc_doc }}
       run: |
         REQS=requirement.txt
         touch "$REQS"
@@ -120,6 +135,11 @@ runs:
         if [[ ${{ inputs.cylc_rose }} == true ]]; then
           echo \
             "cylc-rose[${{ inputs.cylc_rose_opts }}] @ git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}" \
+            >> "$REQS"
+        fi
+        if [[ ${{ inputs.cylc_rose }} == true ]]; then
+          echo \
+            "cylc-doc[${{ inputs.cylc_doc_opts }}] @ git+https://github.com/${{ inputs.cylc_doc_repo }}@${cylc_doc}" \
             >> "$REQS"
         fi
 
