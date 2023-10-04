@@ -113,7 +113,7 @@ runs:
         cylc_uis:  ${{ inputs.cylc_uiserver_tag || steps.get_tag.outputs.cylc_uiserver }}
         meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.rose }}
         cylc_rose: ${{ inputs.cylc_rose_tag     || steps.get_tag.outputs.cylc_rose }}
-        cylc_rose: ${{ inputs.cylc_doc_tag     || steps.get_tag.outputs.cylc_doc }}
+        cylc_doc: ${{ inputs.cylc_doc_tag     || steps.get_tag.outputs.cylc_doc }}
       run: |
         REQS=requirement.txt
         touch "$REQS"
@@ -137,7 +137,7 @@ runs:
             "cylc-rose[${{ inputs.cylc_rose_opts }}] @ git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}" \
             >> "$REQS"
         fi
-        if [[ ${{ inputs.cylc_rose }} == true ]]; then
+        if [[ ${{ inputs.cylc_doc}} == true ]]; then
           echo \
             "cylc-doc[${{ inputs.cylc_doc_opts }}] @ git+https://github.com/${{ inputs.cylc_doc_repo }}@${cylc_doc}" \
             >> "$REQS"
