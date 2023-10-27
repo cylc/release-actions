@@ -1,0 +1,15 @@
+# THIS IS A TEST FILE
+
+[project]
+name = "test-project"
+description = "This is a test project"
+dynamic = ["version"]
+
+[tool.setuptools]
+platforms = ["any"]
+
+[tool.setuptools.dynamic]
+version = {attr = ".FULL_VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["*"]
