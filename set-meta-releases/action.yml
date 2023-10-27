@@ -7,8 +7,11 @@ description: |
 
 outputs:
   meta-releases:
-    description: 'JSON list of meta release identifiers'
-    value: ${{ steps.set-meta-releases.outputs.meta-releases }}
+    description: JSON list of meta release identifiers
+    value: ${{ steps.set-meta-releases.outputs.list }}
+  meta-releases-dict:
+    description: JSON dictionary of branches for each meta release
+    value: ${{ steps.set-meta-releases.outputs.dict }}
 
 runs:
   using: composite
@@ -32,7 +35,10 @@ runs:
           with open('branches.json', 'r') as jsonfile:
             branches = json.load(jsonfile)
             print(
-              'meta-releases='
-              + json.dumps(list(branches['meta_releases'].keys())),
-              file=outputsfile,
+              f"list={json.dumps(list(branches['meta_releases'].keys()))}",
+              file=outputsfile
+            )
+            print(
+              f"dict={json.dumps(branches['meta_releases'])}",
+              file=outputsfile
             )

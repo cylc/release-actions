@@ -155,6 +155,11 @@ jobs:
         shell: python
         run: |
           import json
-          meta_releases = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases }}')
-          assert isinstance(meta_releases, list)
-          assert len(meta_releases) > 0
+
+          meta_releases_list = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases }}')
+          assert isinstance(meta_releases_list, list)
+          assert len(meta_releases_list) > 0
+
+          meta_releases_dict = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases-dict }}')
+          assert isinstance(meta_releases_dict, dict)
+          assert len(meta_releases_dict) > 0
