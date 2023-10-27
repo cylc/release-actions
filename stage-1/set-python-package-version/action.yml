@@ -24,7 +24,7 @@ runs:
     - name: Install utils
       shell: bash
       run: |
-        python3 -m pip install -q packaging
+        python3 -m pip install -q setuptools packaging
         echo "${{ github.action_path }}/../../bin" >> $GITHUB_PATH  # Note: this persists in the workflow after the action is called
 
     - name: Update version in __init__.py
@@ -65,9 +65,7 @@ runs:
         else
           # shim to get the project version from a PEP517 project
           echo "PEP 517 project detected"
-          echo 'from setuptools import setup; setup()' > setup.py
-          package_version=$( python setup.py --version )
-          rm setup.py
+          package_version=$( python -c 'from setuptools import setup; setup()' --version )
         fi
         # Check version number is valid:
         cmp_py_versions "$package_version" "$package_version"
