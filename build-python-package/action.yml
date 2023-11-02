@@ -19,7 +19,7 @@ runs:
           # old style setup.py project
           # (must manually install build dependencies)
           echo "setup.py detected"
-          python3 -m pip install wheel
+          python3 -m pip install wheel setuptools
           python3 setup.py bdist_wheel sdist
         else
           # PEP517 project
