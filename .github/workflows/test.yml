@@ -156,3 +156,25 @@ jobs:
           meta_releases_dict = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases-dict }}')
           assert isinstance(meta_releases_dict, dict)
           assert len(meta_releases_dict) > 0
+
+  test-install-cylc-components:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: install-cylc-components
+        uses: ./install-cylc-components
+        with:
+          cylc_flow: true
+          cylc_flow_tag: 8.4.0
+
+      - name: test
+        run: |
+          [[ $(cylc version) == 8.4.0 ]]
