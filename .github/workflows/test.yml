@@ -160,14 +160,28 @@ jobs:
   test-install-cylc-components:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      matrix:
+        action: ['setup-python', 'setup-micromamba']
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
 
       - name: setup python
+        if: startsWith(matrix.os, 'setup-python')
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
+      - name: setup python
+        if: startsWith(matrix.os, 'setup-micromamba')
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          cache-environment: true
+          post-cleanup: 'all'
+          environment-name: test
+          create-args:
+            python=3.10
 
       - name: install-cylc-components
         uses: ./install-cylc-components
@@ -176,5 +190,6 @@ jobs:
           cylc_flow_tag: 8.4.0
 
       - name: test
+        shell: bash -elo pipefail {0}
         run: |
           [[ $(cylc version) == 8.4.0 ]]
