@@ -5,19 +5,19 @@ runs:
   using: composite
   steps:
     - name: Install Towncrier if needed
-      shell: bash
+      shell: bash -elo pipefail {0}
       run: python3 -m pip install -q towncrier
 
     - name: Get package version if NodeJS project
       id: node
-      shell: bash
+      shell: bash -elo pipefail {0}
       run: |
         if [[ -f package.json ]]; then
           echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Draft changelog
-      shell: bash
+      shell: bash -elo pipefail {0}
       env:
         VER: ${{ steps.node.outputs.version }}
       run: |
