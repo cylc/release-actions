@@ -15,7 +15,7 @@ runs:
       shell: bash -elo pipefail {0}
       run: |
         if [[ -f package.json ]]; then
-          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version ?? ''")" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Draft changelog
