@@ -46,6 +46,11 @@ jobs:
       - name: Configure git
         uses: cylc/release-actions/configure-git@v1
 
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Determine base branch
         id: get-base-branch
         env:
@@ -74,10 +79,9 @@ jobs:
           done
           echo "BASE_BRANCH=$base_branch" >> "$GITHUB_ENV"
 
-      - name: Checkout
+      - name: Checkout base branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           ref: ${{ env.BASE_BRANCH }}
 
       - name: Checkout sync branch if it exists
