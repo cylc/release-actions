@@ -47,7 +47,7 @@ jobs:
         uses: cylc/release-actions/configure-git@v1
 
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -80,7 +80,7 @@ jobs:
           echo "BASE_BRANCH=$base_branch" >> "$GITHUB_ENV"
 
       - name: Checkout base branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env.BASE_BRANCH }}
 
