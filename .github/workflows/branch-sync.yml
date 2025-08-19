@@ -8,6 +8,9 @@ on:
       head_branch:
         type: string
         required: false
+      ignore_branches:
+        type: string
+        required: false
 
 jobs:
   sync:
@@ -71,6 +74,9 @@ jobs:
               # This is the HEAD branch (the one with the new changes), we
               # should merge into the following bugfix branch.
               isnext=true
+            elif [[ -n "${{ inputs.ignore_branches }}" ]] && grep -E "${{ inputs.ignore_branches }} <<< "$branch" 2>/dev/null; then
+              # This branch is excluded by the provied pattern
+              continue
             elif $isnext; then
               # Merge into this branch.
               base_branch="$branch"
