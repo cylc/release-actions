@@ -75,7 +75,7 @@ jobs:
               # This is the HEAD branch (the one with the new changes), we
               # should merge into the following bugfix branch.
               isnext=true
-            elif [[ -n "${{ inputs.ignore_branches }}" ]] && grep -qE "${{ inputs.ignore_branches }} <<< "$branch"; then
+            elif [[ -n "${{ inputs.ignore_branches }}" ]] && grep -qE "${{ inputs.ignore_branches }}" <<< "$branch"; then
               # This branch is excluded by the provied pattern
               continue
             elif $isnext; then
