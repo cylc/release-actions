@@ -10,8 +10,8 @@ inputs:
     required: false
     default: false
   optional-deps:
-    description: Specify optional dependencies to install e.g, `foo,bar`.
-    default: 'all'
+    description: Specify optional dependencies to install e.g, `[foo,bar]`.
+    default: '[all]'
 
 runs:
   using: composite
@@ -50,4 +50,4 @@ runs:
       if: inputs.check-dependencies == 'true'
       # ^ string comparison needed due to https://github.com/actions/runner/issues/2238
       shell: bash -leo pipefail {0}
-      run: python3 -m pip install -e .[${{ inputs.optional-deps }}] --dry-run --ignore-installed
+      run: python3 -m pip install -e .${{ inputs.optional-deps }} --dry-run --ignore-installed
