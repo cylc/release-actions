@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 5
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Install
       run: npm install
@@ -59,7 +59,7 @@ jobs:
         project-file: ['setup.py', 'setup.cfg', 'pyproject.toml']
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Setup Python
       uses: actions/setup-python@v6
@@ -133,7 +133,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: setup python
         uses: actions/setup-python@v6
@@ -165,7 +165,7 @@ jobs:
         action: ['setup-python', 'setup-micromamba']
     steps:
       - name: checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: setup python
         if: matrix.action == 'setup-python'
