@@ -6,7 +6,7 @@ runs:
   using: composite
   steps:
     # NOTE: please update https://github.com/cylc/setup-cylc/blob/main/action.yml
-    # to reflect and changes made to this action
+    # to reflect any changes made to this action
     - shell: bash
       if: startsWith(runner.os, 'macos')
       run: |
