@@ -1,0 +1,49 @@
+name: Bump dev version of JS package
+description: Bump JS package to a guessed development version
+# NOTE: Needs GITHUB_TOKEN env variable
+
+runs:
+  using: composite
+  steps:
+    - name: Configure git
+      shell: bash
+      run: ${{ github.action_path }}/../../configure-git/configure-git.sh
+
+    - name: Update version
+      id: bump
+      shell: bash
+      run: |
+        VERSION=$(npm version preminor --no-git-tag-version)
+        # Drop v prefix:
+        VERSION=${VERSION#v}
+
+        BRANCH_NAME="bump-${VERSION}"
+        git checkout -b "$BRANCH_NAME"
+        git add package.json
+
+        echo "[command]git status"; git status
+
+        echo "[command]git commit"
+        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow }}, run: ${{ github.run_number }}"
+        echo "[command]git push"
+        git push
+
+        echo "head_ref=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+    - name: Create PR
+      shell: bash
+      env:
+        INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
+        INPUT_BASE: ${{ github.event.pull_request.base.ref }}
+        INPUT_TITLE: '🤖 Bump dev version'
+        INPUT_BODY: |
+          I have attempted to guess the next dev (preminor) version.
+          If it is not correct, please push to this branch.
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
+      run: |
+        gh pr create -R "$GITHUB_REPOSITORY" \
+          -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \
+          -r "$REVIEWER"
+
+        # Add 'small' label if it exists, else no worries
+        gh pr edit "$INPUT_HEAD" -R "$GITHUB_REPOSITORY" --add-label 'small' || true
