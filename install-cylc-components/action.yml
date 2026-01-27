@@ -121,12 +121,6 @@ runs:
       run: |
         ARGS=()
 
-        if [[ ${{ inputs.editable_installations }} == true ]]; then
-          EDITABLE="--editable"
-        else
-          EDITABLE=''
-        fi
-
         if [[ ${{ inputs.cylc_flow }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
