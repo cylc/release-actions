@@ -17,6 +17,12 @@ inputs:
       The branch to use when determining compatible versions, if running
       in workflow dispatch.
     required: false
+  editable_installations:
+    description: |
+      Install repositories in editable mode.
+      This may be useful for running coverage.
+    default: false
+    required: false
 
   cylc_flow:
     description: Install cylc-flow (default=true)
@@ -113,28 +119,32 @@ runs:
         meto_rose: ${{ inputs.metomi_rose_tag   || steps.get_tag.outputs.rose }}
         cylc_rose: ${{ inputs.cylc_rose_tag     || steps.get_tag.outputs.cylc_rose }}
       run: |
-        REQS=requirement.txt
-        touch "$REQS"
+        ARGS=()
+
         if [[ ${{ inputs.cylc_flow }} == true ]]; then
-          echo \
-            "cylc-flow[${{ inputs.cylc_flow_opts }}] @ git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}" \
-            >> "$REQS"
+          if [[ ${{ inputs.editable_installations }} == true ]]; then
+            ARGS+=("--editable")
+          fi
+          ARGS+=("git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}#egg=cylc-flow[${{ inputs.cylc_flow_opts }}]")
         fi
         if [[ ${{ inputs.cylc_uiserver }} == true ]]; then
-          echo \
-            "cylc-uiserver[${{ inputs.cylc_uiserver_opts }}] @ git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}" \
-            >> "$REQS"
+          if [[ ${{ inputs.editable_installations }} == true ]]; then
+            ARGS+=("--editable")
+          fi
+          ARGS+=("git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uiserver}#egg=cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]")
         fi
         if [[ ${{ inputs.metomi_rose }} == true ]]; then
-          echo \
-            "metomi-rose[${{ inputs.metomi_rose_opts }}] @ git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}" \
-            >> "$REQS"
+          if [[ ${{ inputs.editable_installations }} == true ]]; then
+            ARGS+=("--editable")
+          fi
+        ARGS+=("git+https://github.com/${{ inputs.metomi_rose_repo }}@${metomi_rose}#egg=metomi-rose[${{ inputs.metomi_rose_opts }}]")
         fi
         if [[ ${{ inputs.cylc_rose }} == true ]]; then
-          echo \
-            "cylc-rose[${{ inputs.cylc_rose_opts }}] @ git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}" \
-            >> "$REQS"
+          if [[ ${{ inputs.editable_installations }} == true ]]; then
+            ARGS+=("--editable")
+          fi
+          ARGS+=("git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}#egg=cylc-rose[${{ inputs.cylc_rose_opts }}]")
         fi
 
-        cat "$REQS"
-        pip install -r "$REQS"
+        echo "pip install ${ARGS[@]}"
+        pip install "${ARGS[@]}"
