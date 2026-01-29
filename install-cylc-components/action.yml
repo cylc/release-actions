@@ -131,13 +131,13 @@ runs:
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-          ARGS+=("git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uiserver}#egg=cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]")
+          ARGS+=("git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}#egg=cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]")
         fi
         if [[ ${{ inputs.metomi_rose }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-        ARGS+=("git+https://github.com/${{ inputs.metomi_rose_repo }}@${metomi_rose}#egg=metomi-rose[${{ inputs.metomi_rose_opts }}]")
+          ARGS+=("git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}#egg=metomi-rose[${{ inputs.metomi_rose_opts }}]")
         fi
         if [[ ${{ inputs.cylc_rose }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
