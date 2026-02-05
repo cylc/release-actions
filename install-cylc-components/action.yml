@@ -2,7 +2,6 @@ name: Install Cylc Components
 description: |
   Install Cylc (&Rose) project components at compatible versions.
 
-
 inputs:
   meta_release:
     description: |
