@@ -2,6 +2,7 @@ name: Install Cylc Components
 description: |
   Install Cylc (&Rose) project components at compatible versions.
 
+
 inputs:
   meta_release:
     description: |
@@ -125,25 +126,25 @@ runs:
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-          ARGS+=("git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}#egg=cylc-flow[${{ inputs.cylc_flow_opts }}]")
+          ARGS+=("cylc-flow[${{ inputs.cylc_flow_opts }}]@git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}#egg=cylc-flow")
         fi
         if [[ ${{ inputs.cylc_uiserver }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-          ARGS+=("git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}#egg=cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]")
+          ARGS+=("cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]@git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}#egg=cylc-uiserver")
         fi
         if [[ ${{ inputs.metomi_rose }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-          ARGS+=("git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}#egg=metomi-rose[${{ inputs.metomi_rose_opts }}]")
+          ARGS+=("metomi-rose[${{ inputs.metomi_rose_opts }}]@git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}#egg=metomi-rose")
         fi
         if [[ ${{ inputs.cylc_rose }} == true ]]; then
           if [[ ${{ inputs.editable_installations }} == true ]]; then
             ARGS+=("--editable")
           fi
-          ARGS+=("git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}#egg=cylc-rose[${{ inputs.cylc_rose_opts }}]")
+          ARGS+=("cylc-rose[${{ inputs.cylc_rose_opts }}]@git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}#egg=cylc-rose")
         fi
 
         echo "pip install ${ARGS[@]}"
