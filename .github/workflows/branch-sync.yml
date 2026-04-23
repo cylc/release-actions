@@ -159,7 +159,7 @@ jobs:
 
             We maintain bugfix branches in this repository in order to allow us to continue developing bugfixes for older versions, while simultaneously developing features for newer versions.
 
-            Bugfixes are raised against the relevant bugfix branch. When merged, a "sync" PR is automatically created to port this bugfix onto the canonical branch. The author of the bugfix typically reviews and merges this PR.
+            When bugfix PRs are merged into a bugfix branch, a "sync" PR is automatically created to merge a copy of the bugfix branch into the next feature branch (usually master). The author of the bugfix typically reviews and merges this PR.
 
             What you are reviewing here is the original bugfix in the context of the new branch. Sometimes changes need to be made as part of this porting, typically as the result of conflicts.
 
@@ -170,7 +170,6 @@ jobs:
             > Please do a **normal merge**, not squash merge.
 
             Please fix conflicts if necessary.
-
             ---
 
             Triggered by `${{ github.event_name }}`
