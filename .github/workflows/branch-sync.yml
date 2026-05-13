@@ -155,10 +155,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BODY: |
+            **This is an automated "sync" PR**
+
+            We maintain bugfix branches in this repository in order to allow us to continue developing bugfixes for older versions, while simultaneously developing features for newer versions.
+
+            When bugfix PRs are merged into a bugfix branch, a "sync" PR is automatically created to merge a copy of the bugfix branch into the next feature branch (usually master). The author of the bugfix typically reviews and merges this PR.
+
+            What you are reviewing here are the original bugfix(es) in the context of the new branch. Sometimes changes need to be made as part of this porting:
+            - To resolve conflicts.
+            - If there are (non-conflicting) incompatible changes in different parts of the codebase.
+
+            **If any changes are required** -> please push new commits to this branch and assign someone else to review them.
+
+            **Otherwise** -> please approve and merge this PR.
+
             > [!IMPORTANT]
             > Please do a **normal merge**, not squash merge.
-
-            Please fix conflicts if necessary.
 
             ---
 
