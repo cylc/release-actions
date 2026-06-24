@@ -23,6 +23,17 @@ inputs:
       This may be useful for running coverage.
     default: false
     required: false
+  local_source:
+    description: |
+      Optional: The path of a local Python package to install.
+
+      E.g, to install Rose along with Cylc you might use:
+      * `cylc_flow=True`.
+      * `local_source=./metomi-rose`.
+
+      Dou may use `pip` options here, e.g: `-e=./metomi-rose[lint]`.
+    default: false
+    required: false
 
   cylc_flow:
     description: Install cylc-flow (default=true)
@@ -121,29 +132,35 @@ runs:
       run: |
         ARGS=()
 
-        if [[ ${{ inputs.cylc_flow }} == true ]]; then
-          if [[ ${{ inputs.editable_installations }} == true ]]; then
+        if ${{ inputs.cylc_flow }}; then
+          if ${{ inputs.editable_installations }}; then
             ARGS+=("--editable")
           fi
           ARGS+=("cylc-flow[${{ inputs.cylc_flow_opts }}]@git+https://github.com/${{ inputs.cylc_flow_repo }}@${cylc_flow}#egg=cylc-flow")
         fi
-        if [[ ${{ inputs.cylc_uiserver }} == true ]]; then
-          if [[ ${{ inputs.editable_installations }} == true ]]; then
+        if ${{ inputs.cylc_uiserver }}; then
+          if ${{ inputs.editable_installations }}; then
             ARGS+=("--editable")
           fi
           ARGS+=("cylc-uiserver[${{ inputs.cylc_uiserver_opts }}]@git+https://github.com/${{ inputs.cylc_uiserver_repo }}@${cylc_uis}#egg=cylc-uiserver")
         fi
-        if [[ ${{ inputs.metomi_rose }} == true ]]; then
-          if [[ ${{ inputs.editable_installations }} == true ]]; then
+        if ${{ inputs.metomi_rose }}; then
+          if ${{ inputs.editable_installations }}; then
             ARGS+=("--editable")
           fi
           ARGS+=("metomi-rose[${{ inputs.metomi_rose_opts }}]@git+https://github.com/${{ inputs.metomi_rose_repo }}@${meto_rose}#egg=metomi-rose")
         fi
-        if [[ ${{ inputs.cylc_rose }} == true ]]; then
-          if [[ ${{ inputs.editable_installations }} == true ]]; then
+        if ${{ inputs.cylc_rose }}; then
+          if ${{ inputs.editable_installations }}; then
             ARGS+=("--editable")
           fi
           ARGS+=("cylc-rose[${{ inputs.cylc_rose_opts }}]@git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}#egg=cylc-rose")
+        fi
+        if ! ${{ inputs.local_source }}; then
+          if ${{ inputs.editable_installations }}; then
+            ARGS+=("--editable")
+          fi
+          ARGS+=("${{ inputs.local_source }}")
         fi
 
         echo "pip install ${ARGS[@]}"
