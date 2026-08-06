@@ -156,7 +156,7 @@ runs:
           fi
           ARGS+=("cylc-rose[${{ inputs.cylc_rose_opts }}]@git+https://github.com/${{ inputs.cylc_rose_repo }}@${cylc_rose}#egg=cylc-rose")
         fi
-        if ! ${{ inputs.local_source }}; then
+        if [[ -n '${{ inputs.local_source }}' ]]; then
           if ${{ inputs.editable_installations }}; then
             ARGS+=("--editable")
           fi
