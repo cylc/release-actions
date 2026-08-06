@@ -32,7 +32,7 @@ inputs:
       * `local_source=./metomi-rose`.
 
       You may use `pip` options here, e.g: `-e=./metomi-rose[lint]`.
-    default: false
+    default: ''
     required: false
 
   cylc_flow:
