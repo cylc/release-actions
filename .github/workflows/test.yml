@@ -183,13 +183,22 @@ jobs:
           create-args:
             python=3.10
 
+      - name: checkout rose
+        uses: actions/checkout@v7
+        with:
+          repository: metomi/rose
+          ref: 2.4.0
+          path: metomi-rose
+
       - name: install-cylc-components
         uses: ./install-cylc-components
         with:
           cylc_flow: true
           cylc_flow_tag: 8.4.0
+          local_source: ./metomi-rose[lint]
 
       - name: test
-        shell: bash -elo pipefail {0}
+        shell: bash -xelo pipefail {0}
         run: |
           [[ $(cylc version) == 8.4.0 ]]
+          [[ $(rose version) == 'rose 2.4.0' ]]
