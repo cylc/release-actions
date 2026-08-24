@@ -33,13 +33,13 @@ runs:
     - name: List commit authors
       shell: bash
       run: |
-        git shortlog -s HEAD \
+        git shortlog --no-merges -s HEAD \
             | awk '{$1=""; print substr($0,2) }' \
             | sort \
             | grep -v '\[bot\]' \
             > shortlog
         echo '::group::Commit authors:'
-        git shortlog -se HEAD
+        git shortlog --no-merges -se HEAD
         echo '::endgroup::'
 
     - name: See if they differ
