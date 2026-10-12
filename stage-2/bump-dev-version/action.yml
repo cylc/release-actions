@@ -22,15 +22,11 @@ runs:
       shell: bash
       run: ${{ github.action_path }}/../../configure-git/configure-git.sh
 
-    - name: Set env vars
-      shell: bash
-      run: |
-        echo "INIT_FILE=${{ inputs.init-file }}" >> "$GITHUB_ENV"
-        echo "REVIEWER=${{ github.event.pull_request.merged_by.login }}" >> "$GITHUB_ENV"
-
     - name: Guess new dev version
       id: guess
       shell: python
+      env:
+        INIT_FILE: ${{ inputs.init-file }}
       run: |
         import os
         import importlib.util
@@ -53,19 +49,17 @@ runs:
 
     - name: Create new micro/bugfix branch if needed
       if: ${{ steps.guess.outputs.bugfix-branch }}
-      id: bugfix-branch
       shell: bash
       env:
-        PS4: '+ \[\033[0;34m\]' # blue to stand out in logs
         BRANCH: ${{ steps.guess.outputs.bugfix-branch }}
       run: |
-        set -x
-        git branch "$BRANCH"
-        git push origin "$BRANCH"
+        git push origin "HEAD:refs/heads/${BRANCH}"
 
     - name: Create PR for micro/bugfix bump
       shell: bash
       env:
+        INIT_FILE: ${{ inputs.init-file }}
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         BASE_BRANCH: ${{ steps.guess.outputs.bugfix-branch || github.event.pull_request.base.ref }}
         VERSION: ${{ steps.guess.outputs.new-micro }}
       run: ${{ github.action_path }}/create-pr.sh
@@ -74,6 +68,8 @@ runs:
       if: ${{ steps.guess.outputs.new-minor }}
       shell: bash
       env:
+        INIT_FILE: ${{ inputs.init-file }}
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
         VERSION: ${{ steps.guess.outputs.new-minor }}
       run: ${{ github.action_path }}/create-pr.sh
