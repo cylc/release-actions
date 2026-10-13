@@ -24,7 +24,7 @@ runs:
         echo "[command]git status"; git status
 
         echo "[command]git commit"
-        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow }}, run: ${{ github.run_number }}"
+        git commit -m "Bump version to $VERSION"
         echo "[command]git push"
         git push
 
@@ -33,13 +33,17 @@ runs:
     - name: Create PR
       shell: bash
       env:
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
         INPUT_BASE: ${{ github.event.pull_request.base.ref }}
-        INPUT_TITLE: '🤖 Bump dev version'
+        INPUT_TITLE: '🤖 Bump version to ${{ steps.bump.outputs.head_ref }}'
         INPUT_BODY: |
           I have attempted to guess the next dev (preminor) version.
           If it is not correct, please push to this branch.
-        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
+
+          ---
+
+          Workflow: `${{ github.workflow }}`, run: ${{ github.run_number }}
       run: |
         gh pr create -R "$GITHUB_REPOSITORY" \
           -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \

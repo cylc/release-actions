@@ -39,53 +39,37 @@ runs:
 
         # Get version
         ver = Version(module.__version__)
-        new_ver = f'{ver.major}.{ver.minor}.{ver.micro + 1}.dev'
-        # Set output
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write(f'new_version={new_ver}')
 
-    - name: Update version in __init__.py
-      id: bump
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+          print(f'new-micro={ver.major}.{ver.minor}.{ver.micro + 1}.dev', file=f)
+
+          if str(ver) == ver.base_version and ver.micro == 0:
+            print(f'bugfix-branch={ver.major}.{ver.minor}.x', file=f)
+            print(f'new-minor={ver.major}.{ver.minor + 1}.0.dev', file=f)
+
+    - name: Create new micro/bugfix branch if needed
+      if: ${{ steps.guess.outputs.bugfix-branch }}
+      shell: bash
+      env:
+        BRANCH: ${{ steps.guess.outputs.bugfix-branch }}
+      run: |
+        git push origin "HEAD:refs/heads/${BRANCH}"
+
+    - name: Create PR for micro/bugfix bump
       shell: bash
       env:
         INIT_FILE: ${{ inputs.init-file }}
-        VERSION: ${{ steps.guess.outputs.new_version }}
-      run: |
-        pattern="(__version__ ?= ?['\"]).*(['\"])"
-        sed -i -E "s/${pattern}/\1${VERSION}\2/" "$INIT_FILE"
+        REVIEWER: ${{ github.event.pull_request.merged_by.login }}
+        BASE_BRANCH: ${{ steps.guess.outputs.bugfix-branch || github.event.pull_request.base.ref }}
+        VERSION: ${{ steps.guess.outputs.new-micro }}
+      run: ${{ github.action_path }}/create-pr.sh
 
-        if [[ -z $(git diff --stat -- "$INIT_FILE") ]]; then
-          echo "::error::No changes to ${INIT_FILE} occurred"
-          exit 1
-        fi
-
-        BRANCH_NAME="bump-${VERSION}"
-        git checkout -b "$BRANCH_NAME"
-        git add "$INIT_FILE"
-
-        echo "[command]git status"; git status
-
-        echo "[command]git commit"
-        git commit -m "Bump dev version" -m "Workflow: ${{ github.workflow }}, run: ${{ github.run_number }}"
-        echo "[command]git push"
-        git push
-
-        echo "head_ref=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-
-    - name: Create PR
+    - name: Create PR for minor bump
+      if: ${{ steps.guess.outputs.new-minor }}
       shell: bash
       env:
-        INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
-        INPUT_BASE: ${{ github.event.pull_request.base.ref }}
-        INPUT_TITLE: '🤖 Bump dev version'
-        INPUT_BODY: |
-          I have attempted to guess the next dev version.
-          If it is not correct, please push to this branch.
+        INIT_FILE: ${{ inputs.init-file }}
         REVIEWER: ${{ github.event.pull_request.merged_by.login }}
-      run: |
-        gh pr create -R "$GITHUB_REPOSITORY" \
-          -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \
-          -r "$REVIEWER"
-
-        # Add 'small' label if it exists, else no worries
-        gh pr edit "$INPUT_HEAD" -R "$GITHUB_REPOSITORY" --add-label 'small' || true
+        BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+        VERSION: ${{ steps.guess.outputs.new-minor }}
+      run: ${{ github.action_path }}/create-pr.sh
