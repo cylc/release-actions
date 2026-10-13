@@ -21,13 +21,13 @@ git checkout -b "$head_branch"
 git add "$INIT_FILE"
 
 git status
-git commit -m "Bump to ${VERSION}"
+git commit -m "Bump version to ${VERSION}"
 git push
 
 set +x
 
 # Create PR:
-title="🤖 Bump to ${VERSION}"
+title="🤖 Bump version to ${VERSION}"
 
 body="
 I have attempted to guess the next dev version.
