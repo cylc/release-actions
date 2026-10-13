@@ -141,7 +141,7 @@ jobs:
           python-version: '3.x'
 
       - name: run
-        id: test-set-meta-releases
+        id: test
         uses: ./set-meta-releases
 
       - name: check
@@ -149,13 +149,44 @@ jobs:
         run: |
           import json
 
-          meta_releases_list = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases }}')
+          meta_releases_list = json.loads('${{ steps.test.outputs.meta-releases }}')
           assert isinstance(meta_releases_list, list)
           assert len(meta_releases_list) > 0
 
-          meta_releases_dict = json.loads('${{ steps.test-set-meta-releases.outputs.meta-releases-dict }}')
+          meta_releases_dict = json.loads('${{ steps.test.outputs.meta-releases-dict }}')
           assert isinstance(meta_releases_dict, dict)
           assert len(meta_releases_dict) > 0
+
+      - name: create local branches.json
+        shell: python
+        run: |
+          import json
+          branches = {
+            "meta_releases": {
+              "1.1.0": {"foo": "main", "bar": "0.2.5"},
+              "1.0.0": {"foo": "3.1.4", "bar": "0.2.4"}
+            }
+          }
+          with open('my-branches.json', 'w') as f:
+            json.dump(branches, f)
+
+      - name: run with local branches.json
+        id: test-local
+        uses: ./set-meta-releases
+        with:
+          branches-file: my-branches.json
+
+      - name: check
+        shell: python
+        run: |
+          import json
+
+          meta_releases_list = json.loads('${{ steps.test-local.outputs.meta-releases }}')
+          assert meta_releases_list == ["1.1.0", "1.0.0"]
+
+          meta_releases_dict = json.loads('${{ steps.test-local.outputs.meta-releases-dict }}')
+          assert isinstance(meta_releases_dict, dict)
+          assert meta_releases_dict["1.1.0"]["bar"] == "0.2.5"
 
   test-install-cylc-components:
     runs-on: ubuntu-latest

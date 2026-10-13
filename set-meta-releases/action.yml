@@ -5,6 +5,12 @@ description: |
   The meta releases will be made available as a JSON list in the output
   `meta-releases`.
 
+inputs:
+  branches-file:
+    description: Path to local branches.json file if applicable
+    required: false
+    default: ''
+
 outputs:
   meta-releases:
     description: JSON list of meta release identifiers
@@ -19,20 +25,23 @@ runs:
     - name: Configure Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.9
+        python-version: '3.x'
 
-    - name: fetch branch file
+    - name: fetch branches file
+      if: ${{ !inputs.branches-file }}
       shell: bash
       run: |
         wget https://raw.githubusercontent.com/cylc/cylc-admin/master/docs/status/branches.json
 
     - id: set-meta-releases
       shell: python
+      env:
+        BRANCHES_FILE: ${{ inputs.branches-file }}
       run: |
         import json
         import os
         with open(os.environ['GITHUB_OUTPUT'], 'w+') as outputsfile:
-          with open('branches.json', 'r') as jsonfile:
+          with open(os.environ['BRANCHES_FILE'] or 'branches.json', 'r') as jsonfile:
             branches = json.load(jsonfile)
             print(
               f"list={json.dumps(list(branches['meta_releases'].keys()))}",
