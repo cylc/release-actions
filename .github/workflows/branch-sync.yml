@@ -74,7 +74,7 @@ jobs:
           isnext=false
 
           # Run through bugfix branches in order, e.g. 1.2.x, 1.3.x, 1.4.x.
-          for branch in $(git ls-remote --branches origin '*.x' | sed -n 's/.*refs\/heads\/\(.*\)/\1/p' | sort); do
+          for branch in $(git ls-remote --branches origin '*.x' | sed -n 's/.*refs\/heads\/\(.*\)/\1/p' | sort -V); do
             if [[ "$branch" == "$HEAD_BRANCH" ]]; then
               # This is the HEAD branch (the one with the new changes), we
               # should merge into the following bugfix branch.
