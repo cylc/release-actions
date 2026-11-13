@@ -26,6 +26,13 @@ git push
 
 set +x
 
+# Create milestone if it doesn't exist
+gh api --method POST \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2026-03-10" \
+    "/repos/${GITHUB_REPOSITORY}/milestones" \
+    -f "title=${MILESTONE}" || true
+
 # Create PR:
 title="🤖 Bump version to ${VERSION}"
 
@@ -43,8 +50,9 @@ set -x
 gh pr create -R "$GITHUB_REPOSITORY" \
     -H "$head_branch" -B "$BASE_BRANCH" -t "$title" -b "$body" -r "$REVIEWER"
 
-# Add 'small' label if it exists, else no worries
+# Add label & milestone if possible, else no worries
 gh pr edit "$head_branch" -R "$GITHUB_REPOSITORY" --add-label 'small' || true
+gh pr edit "$head_branch" -R "$GITHUB_REPOSITORY" --milestone "$MILESTONE" || true
 
 git checkout "$original_commit"
 

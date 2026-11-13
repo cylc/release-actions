@@ -16,6 +16,7 @@ runs:
         VERSION=$(npm version preminor --no-git-tag-version)
         # Drop v prefix:
         VERSION=${VERSION#v}
+        MILESTONE=${VERSION%%-*}
 
         BRANCH_NAME="bump-${VERSION}"
         git checkout -b "$BRANCH_NAME"
@@ -28,15 +29,18 @@ runs:
         echo "[command]git push"
         git push
 
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
         echo "head_ref=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+        echo "milestone=${MILESTONE}" >> $GITHUB_OUTPUT
 
     - name: Create PR
       shell: bash
       env:
+        MILESTONE: ${{ steps.bump.outputs.milestone }}
         REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         INPUT_HEAD: ${{ steps.bump.outputs.head_ref }}
         INPUT_BASE: ${{ github.event.pull_request.base.ref }}
-        INPUT_TITLE: '🤖 Bump version to ${{ steps.bump.outputs.head_ref }}'
+        INPUT_TITLE: '🤖 Bump version to ${{ steps.bump.outputs.version }}'
         INPUT_BODY: |
           I have attempted to guess the next dev (preminor) version.
           If it is not correct, please push to this branch.
@@ -45,9 +49,18 @@ runs:
 
           Workflow: `${{ github.workflow }}`, run: ${{ github.run_number }}
       run: |
+        # Create milestone if it doesn't exist
+        gh api --method POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2026-03-10" \
+          "/repos/${GITHUB_REPOSITORY}/milestones" \
+          -f "title=${MILESTONE}" || true
+
+        # Create PR
         gh pr create -R "$GITHUB_REPOSITORY" \
           -H "$INPUT_HEAD" -B "$INPUT_BASE" -t "$INPUT_TITLE" -b "$INPUT_BODY" \
           -r "$REVIEWER"
 
-        # Add 'small' label if it exists, else no worries
+        # Add label & milestone if possible, else no worries
         gh pr edit "$INPUT_HEAD" -R "$GITHUB_REPOSITORY" --add-label 'small' || true
+        gh pr edit "$INPUT_HEAD" -R "$GITHUB_REPOSITORY" --milestone "$MILESTONE" || true
