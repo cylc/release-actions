@@ -40,12 +40,16 @@ runs:
         # Get version
         ver = Version(module.__version__)
 
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-          print(f'new-micro={ver.major}.{ver.minor}.{ver.micro + 1}.dev', file=f)
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+          ver_str = f'{ver.major}.{ver.minor}.{ver.micro + 1}'
+          print(f'new-micro={ver_str}.dev', file=output)
+          print(f'micro-milestone={ver_str}', file=output)
 
           if str(ver) == ver.base_version and ver.micro == 0:
-            print(f'bugfix-branch={ver.major}.{ver.minor}.x', file=f)
-            print(f'new-minor={ver.major}.{ver.minor + 1}.0.dev', file=f)
+            print(f'bugfix-branch={ver.major}.{ver.minor}.x', file=output)
+            ver_str = f'{ver.major}.{ver.minor + 1}.0'
+            print(f'new-minor={ver_str}.dev', file=output)
+            print(f'minor-milestone={ver_str}', file=output)
 
     - name: Create new micro/bugfix branch if needed
       if: ${{ steps.guess.outputs.bugfix-branch }}
@@ -62,6 +66,7 @@ runs:
         REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         BASE_BRANCH: ${{ steps.guess.outputs.bugfix-branch || github.event.pull_request.base.ref }}
         VERSION: ${{ steps.guess.outputs.new-micro }}
+        MILESTONE: ${{ steps.guess.outputs.micro-milestone }}
       run: ${{ github.action_path }}/create-pr.sh
 
     - name: Create PR for minor bump
@@ -72,4 +77,5 @@ runs:
         REVIEWER: ${{ github.event.pull_request.merged_by.login }}
         BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
         VERSION: ${{ steps.guess.outputs.new-minor }}
+        MILESTONE: ${{ steps.guess.outputs.minor-milestone }}
       run: ${{ github.action_path }}/create-pr.sh
